@@ -1,53 +1,74 @@
 /*
  * TODO:
- * - Set up DAC
- * - Set up sample buffer
- * - Sample multiple values at a time
- * - Set up DMA
- * - Set up PIT to trigger DMA at sample rate
+ * - Improve state update algorithm 
+ * - Omptimize?  Can't generate samples at 44.1kHz
+ * - Add input to excite system
+ * - Add add parameter control pots
  */
 
 #include "system.h"
+#include "oscillator.h"
 #include "Arduino.h"
 #include "kinetis.h"
 
-#define DAC_PIN A12
-
 void dac_setup();
 void dma_setup(volatile uint16_t source[]);
+void tpm_setup();
 
 volatile uint16_t sample_buffer_0[128] __attribute__((aligned (256)));
 volatile uint16_t sample_buffer_1[128] __attribute__((aligned (256)));
-uint8_t buffer_tracker = 0;
+
+// These shouldn't be global variables, but I'm not sure where they go yet...
+volatile uint8_t buffer_tracker = 0;
+volatile uint8_t buffer_flag = 0;
+volatile uint8_t buffer_0_ready = 0;
+volatile uint8_t buffer_1_ready = 0;
+
+volatile uint8_t state_flag = 0;
+
+volatile uint8_t led_val = 0;
 
 extern "C" int main(void) {
 	float i = 0.0;
-	MassSystem osc{};
+	MassSystem massSystem{};
+	Oscillator osc{};
 	uint16_t table_size = 128;
 	float sample_freq = 441000;
-	float phase_step = (1.0f/128.0f);
+	osc.phase_step = (1.0f/512.0f);
 
 	// Fill sample buffers
-	osc.generate_table(sample_buffer_0, table_size, phase_step, 0.0f); 
-	for (int i = 0; i < 128; i++) {
-		sample_buffer_1[i] = i * (2048 / 128);
-	}
+	massSystem.generate_table(sample_buffer_0, table_size, osc.phase_step, &osc.phase_accumulator); 
+	buffer_0_ready = 1;
+	massSystem.generate_table(sample_buffer_1, table_size, osc.phase_step, &osc.phase_accumulator); 
+	buffer_1_ready = 1;
 
 	dac_setup();	
 	dma_setup(sample_buffer_0);
-
+	
 	pinMode(13, OUTPUT);
-	delay(200);
-	if ((DMA_DSR_BCR0 & DMA_DSR_BCR_BES) || (DMA_DSR_BCR0 & DMA_DSR_BCR_BED))
-		digitalWrite(13, HIGH);
-	/*
+	tpm_setup();
+
+
+	// Main task loop
 	while(1) {
-		for (uint8_t i = 0; i < table_size; i++) {
-			*(uint16_t*)&(DAC0_DAT0L) = wavetable[i];
-			delay(1);
+		// Sample buffer population
+		if (buffer_flag) {
+			if (buffer_tracker) {
+				massSystem.generate_table(sample_buffer_0, table_size, osc.phase_step, &osc.phase_accumulator);
+				buffer_0_ready = 1;
+			} else {
+				massSystem.generate_table(sample_buffer_1, table_size, osc.phase_step, &osc.phase_accumulator);
+				buffer_1_ready = 1;
+			}
+			buffer_flag = 0;
+		}
+
+		// Mass system state update
+		else if (state_flag) {
+			massSystem.update_state(0.01);
+			state_flag = 0;
 		}
 	}
-	*/
 
 }
 
@@ -66,7 +87,7 @@ void dac_setup () {
 		*(uint16_t *)&(DAC0_DAT0L) = i;
 		delay(1);
 
-	*(uint16_t *)&(DAC0_DAT1L) = 3200;
+	//*(uint16_t *)&(DAC0_DAT1L) = 3200;
 	}
 
 	DAC0_C1 = 
@@ -96,13 +117,14 @@ void dma_setup(volatile uint16_t source[]) {
 	DMA_DAR0 = &DAC0_DAT0L; // DMA destination address (DAC0)
 
 	SIM_SCGC6 |= SIM_SCGC6_PIT; // enable PIT clock (SIM gate)
-	PIT_LDVAL0 = 50000;	// Set timer count
+	PIT_LDVAL0 = 1088;	// Set timer count
 	PIT_TCTRL0 |= 
 		(PIT_TCTRL_TIE	// Enable Timer interrupts 
 		|PIT_TCTRL_TEN); // Enable timer
 	PIT_MCR = 0x0; // Re-enable PIT clock
 
-	NVIC_SET_PRIORITY(IRQ_DMA_CH0, 64);
+	// Enable DMA interrupts
+	NVIC_SET_PRIORITY(IRQ_DMA_CH0, 0);
 	NVIC_ENABLE_IRQ(IRQ_DMA_CH0);
 
 	DMAMUX0_CHCFG0 = 
@@ -111,15 +133,43 @@ void dma_setup(volatile uint16_t source[]) {
 		|DMAMUX_TRIG);			// Set trigger mode
 }
 
+void tpm_setup() {
+	FTM0_SC = 0;	// Disable TPM0
+	FTM0_CNT = 0;	// Clear counter
+	FTM0_MOD = 0x3A98; // Set mod to 15,000
+
+	FTM0_SC |=
+		(FTM_SC_TOF			// Clear overflow flag
+		|FTM_SC_TOIE		// Enable overflow interrupt
+		|FTM_SC_CLKS(1)	// Enable timer, count on internal clock
+		|FTM_SC_PS(4));	// Set timer prescaler to 16	
+	
+	// Enable PTM interrupts
+	NVIC_SET_PRIORITY(IRQ_FTM0, 64);
+	NVIC_ENABLE_IRQ(IRQ_FTM0);
+}
+
+// Interrupt routine to set next sample buffer as DMA source
 void dma_ch0_isr(void) {
 	DMA_DSR_BCR0 &= DMA_DSR_BCR_DONE; // Clear done bit in DMA status register
-	if (buffer_tracker) {
+	if (buffer_tracker && buffer_0_ready) {
+		buffer_1_ready = 0;
 		DMA_SAR0 = sample_buffer_0;
 		buffer_tracker = 0;
-	} else {
+	} else if (!buffer_tracker && buffer_1_ready) {
+		buffer_1_ready = 0;
 		DMA_SAR0 = sample_buffer_1;
 		buffer_tracker = 1;
+	} else {
+		digitalWrite(13, HIGH);
 	}
+	buffer_flag = 1;
 	DMA_DSR_BCR0 |= 256;  // Reset transfer byte count
 }
 
+// Interrupt routine to time state updates
+void ftm0_isr(void) {
+	FTM0_SC |= FTM_SC_TOF;
+	
+	state_flag = 1;
+}	

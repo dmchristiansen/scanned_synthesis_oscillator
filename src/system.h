@@ -15,11 +15,11 @@
 
 struct Weight_t
 {
-	float mass;
-	float pos;
-	float velocity;
-	float accel;
-	float z;
+	volatile float mass;
+	volatile float pos;
+	volatile float velocity;
+	volatile float accel;
+	volatile float z;
 };
 
 class MassSystem 
@@ -38,7 +38,7 @@ class MassSystem
 		void pluck(float[]);
 		float sample(float);
 		void update_state(float);
-		void generate_table(volatile uint16_t*, uint16_t, float, float);
+		void generate_table(volatile uint16_t*, uint16_t, float, volatile float*);
 };
 
 #endif

@@ -42,7 +42,7 @@ float MassSystem::sample(float phase) {
 	float integral;
 
 	// translate from phase to fractional 'index'
-	float phase_pointer = phase * n_weights;
+	float phase_pointer = fmodf(phase, 1.0f) * n_weights;
 	float fractional = std::modf(phase_pointer, &integral);
 	int i = (int)integral;	
 
@@ -74,6 +74,16 @@ void MassSystem::update_state(float h) {
 	 */
 
 	// Update accelerations from positions (for next update)
+	/*int dist = weights[0].pos - weights[0].pos;
+	for (int i=0; i < N_WEIGHTS; i++) {
+		int prev_dist = dist;
+		dist = weights[(i + 1) % n_weights].pos - weights[i].pos;
+		weights[i].accel = 
+			dist + (-1 * prev_dist) + 
+			(-1 * weights[i].z * weights[i].velocity); 
+	}*/
+	
+	// Update accelerations from positions (for next update)
 	for (int i=0; i < N_WEIGHTS; i++) {
 		int prev_i = (i - 1 + N_WEIGHTS) % N_WEIGHTS;
 		int next_i = (i + 1) % N_WEIGHTS;
@@ -87,10 +97,10 @@ void MassSystem::update_state(float h) {
 }
 
 // Fills table with a number of samples from system
-void MassSystem::generate_table(volatile uint16_t* table, uint16_t sample_count, float phase_step, float phase_offset) {
+void MassSystem::generate_table(volatile uint16_t* table, uint16_t sample_count, float phase_step, volatile float* phase_offset) {
 	for (uint16_t i=0; i < sample_count; i++) {
-		table[i] = (uint16_t)(this->sample(phase_offset) * 2048) + 2047;
-		phase_offset += phase_step;
+		table[i] = (uint16_t)(this->sample(*phase_offset) * 2048) + 2047;
+		*phase_offset = fmodf((*phase_offset + phase_step), 1.0f);
 	}
 }
 
