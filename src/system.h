@@ -11,7 +11,7 @@
 #ifndef system_h_
 #define system_h_
 
-#define N_WEIGHTS 10
+#define N_WEIGHTS 20
 
 struct Weight_t
 {

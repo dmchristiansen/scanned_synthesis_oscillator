@@ -28,13 +28,21 @@ volatile uint8_t state_flag = 0;
 
 volatile uint8_t led_val = 0;
 
+uint32_t F_SAMPLE = 22050;
+uint16_t SAMPLE_TIMER = F_BUS / F_SAMPLE;
+
+uint16_t F_UPDATE = 100;
+uint16_t UPDATE_PS = 16;
+uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
 extern "C" int main(void) {
 	float i = 0.0;
 	MassSystem massSystem{};
 	Oscillator osc{};
 	uint16_t table_size = 128;
 	float sample_freq = 441000;
-	osc.phase_step = (1.0f/512.0f);
+	
+	// phase_step = audio frequency / sample frequency
+	osc.phase_step = (220.0/(float)F_SAMPLE);
 
 	// Fill sample buffers
 	massSystem.generate_table(sample_buffer_0, table_size, osc.phase_step, &osc.phase_accumulator); 
@@ -62,7 +70,7 @@ extern "C" int main(void) {
 			}
 			buffer_flag = 0;
 		}
-
+		
 		// Mass system state update
 		else if (state_flag) {
 			massSystem.update_state(0.01);
@@ -86,8 +94,6 @@ void dac_setup () {
 	for (int i=1; i < 2048; i+=4) {
 		*(uint16_t *)&(DAC0_DAT0L) = i;
 		delay(1);
-
-	//*(uint16_t *)&(DAC0_DAT1L) = 3200;
 	}
 
 	DAC0_C1 = 
@@ -117,7 +123,7 @@ void dma_setup(volatile uint16_t source[]) {
 	DMA_DAR0 = &DAC0_DAT0L; // DMA destination address (DAC0)
 
 	SIM_SCGC6 |= SIM_SCGC6_PIT; // enable PIT clock (SIM gate)
-	PIT_LDVAL0 = 1088;	// Set timer count
+	PIT_LDVAL0 = SAMPLE_TIMER;	// Set timer count
 	PIT_TCTRL0 |= 
 		(PIT_TCTRL_TIE	// Enable Timer interrupts 
 		|PIT_TCTRL_TEN); // Enable timer
@@ -136,7 +142,8 @@ void dma_setup(volatile uint16_t source[]) {
 void tpm_setup() {
 	FTM0_SC = 0;	// Disable TPM0
 	FTM0_CNT = 0;	// Clear counter
-	FTM0_MOD = 0x3A98; // Set mod to 15,000
+	//FTM0_MOD = 0x3A98; // Set mod to 15,000
+	FTM0_MOD = (0x3A98) >> 2;
 
 	FTM0_SC |=
 		(FTM_SC_TOF			// Clear overflow flag
