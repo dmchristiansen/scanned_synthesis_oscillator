@@ -11,4 +11,4 @@
  teensy3/usb_rawhid.h teensy3/usb_flightsim.h teensy3/usb_mtp.h \
  teensy3/usb_audio.h teensy3/usb_touch.h teensy3/usb_undef.h \
  teensy3/WCharacter.h teensy3/elapsedMillis.h teensy3/IntervalTimer.h \
- teensy3/kinetis.h
+ src/dac.h teensy3/kinetis.h teensy3/util/delay.h

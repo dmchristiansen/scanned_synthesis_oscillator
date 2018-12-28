@@ -20,8 +20,8 @@ MassSystem::MassSystem()
 		weights[i].z = 0.25;
 	}
 	for (int i=0; i < n_weights; i++) {
-		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights))
-			+ sinf((float)i * 2 * (6.238 / (float)n_weights));
+		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
+			//+ sinf((float)i * 2 * (6.238 / (float)n_weights));
 	}
 
 	for (int i=0; i < n_weights; i++) {

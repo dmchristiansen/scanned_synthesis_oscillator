@@ -8,8 +8,8 @@
 
 #include <stdint.h>
 
-#ifndef system_h_
-#define system_h_
+#ifndef SYSTEM_H_
+#define SYSTEM_H_
 
 #define N_WEIGHTS 20
 
