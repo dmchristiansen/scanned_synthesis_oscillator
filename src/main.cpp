@@ -16,16 +16,18 @@
 
 
 
-#include "system.h"
+#include "mass_spring.h"
 #include "oscillator.h"
 #include "Arduino.h"
 #include "dac.h"
 #include "kinetis.h"
+#include "system.h"
+#include "arm_math.h"
 
 void tpm_setup();
 
-volatile uint16_t sample_buffer_0[128] __attribute__((aligned (256)));
-volatile uint16_t sample_buffer_1[128] __attribute__((aligned (256)));
+volatile uint16_t sample_buffer_0[OUTPUT_BUFFER_SIZE] __attribute__((aligned (OUTPUT_BUFFER_SIZE*2)));
+volatile uint16_t sample_buffer_1[OUTPUT_BUFFER_SIZE] __attribute__((aligned (OUTPUT_BUFFER_SIZE*2)));
 
 // These shouldn't be global variables, but I'm not sure where they go yet...
 volatile uint8_t buffer_tracker = 0;
@@ -52,15 +54,22 @@ extern "C" int main(void) {
 	osc.phase_step = (220.0/(float)22050);
 
 	// Fill sample buffers
-	massSystem.generate_table(sample_buffer_0, table_size, osc.phase_step, &osc.phase_accumulator); 
+	//massSystem.generate_table(sample_buffer_0, table_size, osc.phase_step, &osc.phase_accumulator); 
+	for (int i = 0; i<OUTPUT_BUFFER_SIZE; i++) {
+		sample_buffer_0[i] = 2048+(int16_t)(2047*sin(((float)i)*6.28319/((float)OUTPUT_BUFFER_SIZE)));
+		//sample_buffer_0[i] = (int16_t)(4096/OUTPUT_BUFFER_SIZE)*i;
+	}
+	
 	buffer_0_ready = 1;
 	massSystem.generate_table(sample_buffer_1, table_size, osc.phase_step, &osc.phase_accumulator); 
 	buffer_1_ready = 1;
+	
+	pinMode(13, OUTPUT);
 
 	dac0.Init(sample_buffer_0);
+	//digitalWrite(13, HIGH);
 
-	pinMode(13, OUTPUT);
-	tpm_setup();
+	//tpm_setup();
 
 
 	// Main task loop
@@ -106,20 +115,21 @@ void tpm_setup() {
 
 // Interrupt routine to set next sample buffer as DMA source
 void dma_ch0_isr(void) {
-	DMA_DSR_BCR0 &= DMA_DSR_BCR_DONE; // Clear done bit in DMA status register
+	//DMA_DSR_BCR0 &= DMA_DSR_BCR_DONE; // Clear done bit in DMA status register
 	if (buffer_tracker && buffer_0_ready) {
 		buffer_1_ready = 0;
-		DMA_SAR0 = sample_buffer_0;
+		DMA_TCD0_SADDR = sample_buffer_0;
 		buffer_tracker = 0;
 	} else if (!buffer_tracker && buffer_1_ready) {
 		buffer_1_ready = 0;
-		DMA_SAR0 = sample_buffer_1;
+		DMA_TCD0_SADDR = sample_buffer_1;
 		buffer_tracker = 1;
 	} else {
 		digitalWrite(13, HIGH);
 	}
 	buffer_flag = 1;
-	DMA_DSR_BCR0 |= 256;  // Reset transfer byte count
+	//DMA_DSR_BCR0 |= 256;  // Reset transfer byte count
+	digitalWrite(13, HIGH);
 }
 
 // Interrupt routine to time state updates

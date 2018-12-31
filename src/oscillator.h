@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 
-#ifndef oscillator_h_
-#define oscillator_h_
+#ifndef OSCILLATOR_H
+#define OSCILLATOR_H
 
 class Oscillator {
 	public:
