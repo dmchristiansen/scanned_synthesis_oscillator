@@ -21,7 +21,7 @@ MassSystem::MassSystem()
 	}
 	for (int i=0; i < n_weights; i++) {
 		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
-			//+ sinf((float)i * 2 * (6.238 / (float)n_weights));
+		//weights[i].pos = (1/(float)n_weights)*i*2 - 1;
 	}
 
 	for (int i=0; i < n_weights; i++) {
@@ -108,7 +108,7 @@ void MassSystem::update_state(float h) {
 // Fills table with a number of samples from system
 void MassSystem::generate_table(volatile uint16_t* table, uint16_t sample_count, float phase_step, volatile float* phase_offset) {
 	for (uint16_t i=0; i < sample_count; i++) {
-		table[i] = (uint16_t)(this->sample(*phase_offset) * 512) + 2048;
+		table[i] = (int16_t)(this->sample(*phase_offset) * 2048) + 2048;
 		*phase_offset = fmodf((*phase_offset + phase_step), 1.0f);
 	}
 }

@@ -10,8 +10,8 @@
 void DACInterface::Init(volatile uint16_t source[]) {
 
 	// Enable DMA interrupts
-	//NVIC_SET_PRIORITY(IRQ_DMA_CH0, 0);
-	//NVIC_ENABLE_IRQ(IRQ_DMA_CH0);
+	NVIC_SET_PRIORITY(IRQ_DMA_CH0, 0);
+	NVIC_ENABLE_IRQ(IRQ_DMA_CH0);
 
 	SIM_SCGC2 |= SIM_SCGC2_DAC0; // enable DAC clock
 	
@@ -66,8 +66,8 @@ void DACInterface::Init(volatile uint16_t source[]) {
 	DMA_TCD0_DLASTSGA = 0; // *
 
 	// Enable end-of-loop interrupt
-	DMA_TCD0_CSR = DMA_TCD_CSR_INTMAJOR;	
-	DMA_TCD0_CSR = 0; // *
+	DMA_TCD0_CSR = DMA_TCD_CSR_INTMAJOR | DMA_TCD_CSR_INTHALF;
+	//DMA_TCD0_CSR = 0; // *
 
 	DAC0_C0 |=
 		(DAC_C0_DACBTIEN	// Buffer top interrupt enable
@@ -91,7 +91,7 @@ void DACInterface::Init(volatile uint16_t source[]) {
 	PDB0_SC	|= PDB_SC_CONT;				// Run in continuous mode
 
 	// Set PDB to count to F_BUS / F_SAMPLE
-	PDB0_MOD = ((SAMPLE_TIMER - 1) & 0xFFFF); 
+	PDB0_MOD = (((SAMPLE_TIMER * 8) - 1) & 0xFFFF); 
 	//PDB0_MOD = 500-1; // *
 	
 	// Set DAC trigger interval
@@ -109,6 +109,9 @@ void DACInterface::Init(volatile uint16_t source[]) {
 
 	// It might be possible to use the PDB to trigger DMA
 	// transfers by setting PDB_MOD to 8 * DAC_INT
+
+	//TCD_0.SADDR = 
+	//TCD_0.SOFF = 	
 
 }
 
