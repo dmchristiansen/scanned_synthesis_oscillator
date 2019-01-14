@@ -123,17 +123,15 @@ void tpm_setup(uint8_t prescaler, uint16_t update_timer) {
 	//NVIC_CLEAR_PENDING(IRQ_FTM0);
 }
 
-// Interrupt routine to set next sample buffer as DMA source
+// Interrupt routine to track output buffer use & start buffer fill
 void dma_ch0_isr(void) {
 	DMA_CINT = 0; // Clear interrupt bit
 
 	if (buffer_tracker && buffer_0_ready) {
 		buffer_0_ready = 0;
-		//dac0.TCD.SADDR = (volatile const uint16_t *)output_buffer_0;
 		buffer_tracker = 0;
 	} else if (!buffer_tracker && buffer_1_ready) {
 		buffer_1_ready = 0;
-		//dac0.TCD.SADDR = (volatile const uint16_t *)output_buffer_1;
 		buffer_tracker = 1;
 	} else {
 		//digitalWrite(13, HIGH);
