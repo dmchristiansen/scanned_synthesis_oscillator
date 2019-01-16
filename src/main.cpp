@@ -2,8 +2,11 @@
  * TODO:
  *
  * Functionality:
+ * - Implement event queue
  * - Improve state update algorithm 
  * - Add input to excite system
+ * - Set up switch polling
+ * - Set up ADC polling
  * - Add add parameter control pots
  *
  * Structure:
@@ -69,7 +72,7 @@ extern "C" int main(void) {
 	pinMode(13, OUTPUT);
 
 	dac0.Init(output_buffer_0);
-	
+	//SysTick_Config(F_CPU / 1000);	
 	tpm_setup(UPDATE_PS, UPDATE_TIMER);
 
 	//digitalWrite(13, HIGH);	
@@ -94,12 +97,10 @@ extern "C" int main(void) {
 		if (state_flag) {
 			massSystem.update_state(0.01);
 			state_flag = 0;
-			digitalWrite(13, HIGH);
 		}
 	}
 
 }
-
 
 void tpm_setup(uint8_t prescaler, uint16_t update_timer) {
 
@@ -140,9 +141,17 @@ void dma_ch0_isr(void) {
 
 }
 
+void systick_isr(void) {
+	// increment millisecond counter
+	// poll system
+	systick_millis_count++;
+	digitalWrite(13, ((systick_millis_count & 0x200) ? HIGH : LOW));
+}
+
+//void systick_isr(void) {}
+
 // Interrupt routine to time state updates
 void ftm0_isr(void) {
 	FTM0_SC &= ~FTM_SC_TOF;
 	state_flag = 1;
-	digitalWrite(13, HIGH);
 }	
