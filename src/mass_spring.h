@@ -26,10 +26,12 @@ class MassSystem
 {
 	private:
 
-		int n_weights = N_WEIGHTS;
+		uint8_t n_weights = N_WEIGHTS;
 		Weight_t weights[N_WEIGHTS];
 		float spring_k[N_WEIGHTS]; 
 
+		uint32_t update_interval;
+		uint32_t interval_counter;
     
 	public:
 

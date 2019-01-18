@@ -12,6 +12,7 @@
 
 MassSystem::MassSystem()
 {
+	// Initialize simulation state
 	for (int i=0; i < N_WEIGHTS; i++) {
 		weights[i].mass = 0.05;
 		weights[i].pos = 0;
@@ -27,6 +28,10 @@ MassSystem::MassSystem()
 	for (int i=0; i < n_weights; i++) {
 		spring_k[i] = 2.0;
 	}
+
+	// Set interval to defaults
+	update_interval = 10;
+	interval_counter = 0;
 }
 
 void MassSystem::excite(float excitation[]) {
