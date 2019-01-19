@@ -19,7 +19,6 @@
 
 
 
-#include "mass_spring.h"
 #include "oscillator.h"
 #include "Arduino.h"
 #include "dac.h"
@@ -52,19 +51,8 @@ uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
 DACInterface dac0;
 
 extern "C" int main(void) {
-	MassSystem massSystem{};
-	Oscillator osc{};
-	
-	// phase_step = audio frequency / sample frequency
-	osc.phase_step = (60.0/(float)F_SAMPLE);
-	//osc.phase_step = (1.0 / (float)OUTPUT_BUFFER_SIZE);
-
-	// Fill sample buffers
-	massSystem.generate_table(output_buffer, OUTPUT_BUFFER_SIZE, osc.phase_step, &osc.phase_accumulator); 
-	//for (int i = 0; i<OUTPUT_BUFFER_SIZE/2; i++) {
-		//output_buffer_0[i] = 2048+(int16_t)(2047*sin(((float)i)*6.28319/((float)OUTPUT_BUFFER_SIZE/2)));
-		//output_buffer_0[i] = (int16_t)(4096/OUTPUT_BUFFER_SIZE)*i;
-	//}
+	Oscillator osc;
+	osc.Init(output_buffer, 60.0);
 	
 	buffer_0_ready = 1;	
 	buffer_1_ready = 1;
@@ -72,7 +60,6 @@ extern "C" int main(void) {
 	pinMode(13, OUTPUT);
 
 	dac0.Init(output_buffer_0);
-	//SysTick_Config(F_CPU / 1000);	
 	tpm_setup(UPDATE_PS, UPDATE_TIMER);
 
 	//digitalWrite(13, HIGH);	
@@ -82,12 +69,10 @@ extern "C" int main(void) {
 		// Sample buffer population
 		if (buffer_flag) {
 			if (buffer_tracker) {
-				massSystem.generate_table(output_buffer_0, OUTPUT_BUFFER_SIZE/2, 
-						osc.phase_step, &osc.phase_accumulator);
+				osc.generateTable(output_buffer_0);
 				buffer_0_ready = 1;
 			} else {
-				massSystem.generate_table(output_buffer_1, OUTPUT_BUFFER_SIZE/2, 
-						osc.phase_step, &osc.phase_accumulator);
+				osc.generateTable(output_buffer_1);
 				buffer_1_ready = 1;
 			}
 			buffer_flag = 0;
@@ -95,7 +80,7 @@ extern "C" int main(void) {
 		
 		// Mass system state update
 		if (state_flag) {
-			massSystem.update_state(0.01);
+			osc.updateState(0.01);
 			state_flag = 0;
 		}
 	}

@@ -3,6 +3,7 @@
  */
 
 #include "arm_math.h"
+#include "kinetis.h"
 
 #ifndef SYSTEM_H
 #define SYSTEM_H

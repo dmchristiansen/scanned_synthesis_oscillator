@@ -6,10 +6,12 @@
  * 
  */
 
-#include <stdint.h>
 
 #ifndef MASS_SPRING_NETWORK_H
 #define MASS_SPRING_NETWORK_H
+
+#include <stdint.h>
+#include "system.h"
 
 #define N_WEIGHTS 20
 
@@ -39,8 +41,8 @@ class MassSystem
 		void excite(float[]);
 		void pluck(float[]);
 		float sample(float);
-		void update_state(float);
-		void generate_table(volatile uint16_t*, uint16_t, float, volatile float*);
+		void updateState(float);
+		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);
 };
 
 #endif
