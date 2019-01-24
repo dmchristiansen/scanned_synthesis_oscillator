@@ -3,8 +3,15 @@
  *
  * Functionality:
  * - Implement event queue
+ * 	- Move buffer update handling to queue
+ * 	- Move state update handling to queue
+ * 	- Move state update trigger to systick isr
+ *
  * - Improve state update algorithm 
  * - Add input to excite system
+ * 	- Set up button polling / debounce
+ * 	- Add button press event queueing / handler
+ *
  * - Set up switch polling
  * - Set up ADC polling
  * - Add add parameter control pots
@@ -19,75 +26,62 @@
 
 
 
+#include <functional>
 #include "oscillator.h"
 #include "Arduino.h"
 #include "dac.h"
 #include "kinetis.h"
 #include "system.h"
 #include "arm_math.h"
+#include "EventManager.h"
 
-void tpm_setup(uint8_t, uint16_t);
+void ftm_setup(uint8_t, uint16_t);
 
-volatile uint16_t output_buffer[OUTPUT_BUFFER_SIZE] __attribute__((aligned (OUTPUT_BUFFER_SIZE*2)));
-volatile uint16_t* output_buffer_0 = output_buffer;
-volatile uint16_t* output_buffer_1 = &output_buffer[OUTPUT_BUFFER_SIZE / 2];
+volatile uint16_t output_buffer[OUTPUT_BUFFER_SIZE*OUTPUT_BUFFER_COUNT] 
+	__attribute__((aligned (OUTPUT_BUFFER_SIZE*OUTPUT_BUFFER_COUNT*2)));
 
-// These shouldn't be global variables, but I'm not sure where they go yet...
-volatile uint8_t buffer_tracker = 0;
-volatile uint8_t buffer_flag = 0;
-volatile uint8_t buffer_0_ready = 0;
-volatile uint8_t buffer_1_ready = 0;
-
-volatile uint8_t state_flag = 0;
-
-volatile uint8_t led_val = 0;
-
-volatile uint16_t led_count = 0;
-
-uint16_t F_UPDATE = 1;
+uint16_t F_UPDATE = 100;
 uint16_t UPDATE_PS = 16;
 uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
 
-DACInterface dac0;
+EventManager eventManager;
 
 extern "C" int main(void) {
+	
+	volatile uint16_t* output_buffer_list[OUTPUT_BUFFER_COUNT] = {
+		&output_buffer[0],
+		&output_buffer[OUTPUT_BUFFER_SIZE] 
+	};
+
+	DACInterface dac0;
+	dac0.Init(output_buffer);
+
 	Oscillator osc;
-	osc.Init(output_buffer, 60.0);
-	
-	buffer_0_ready = 1;	
-	buffer_1_ready = 1;
-	
+	osc.Init(output_buffer_list, 400.0);
+
+	MemberFunctionCallable<Oscillator> genTableCallback(&osc, &Oscillator::generateTable);
+	MemberFunctionCallable<Oscillator> updateStateCallback(&osc, &Oscillator::updateState);
+
+	eventManager.addListener(EventManager::kEventOutBuffer, &genTableCallback);
+	eventManager.addListener(EventManager::kEventState, &updateStateCallback);
+
+  eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
+	eventManager.enableListener(EventManager::kEventState, &updateStateCallback, true);
+
 	pinMode(13, OUTPUT);
 
-	dac0.Init(output_buffer_0);
-	tpm_setup(UPDATE_PS, UPDATE_TIMER);
+	ftm_setup(UPDATE_PS, UPDATE_TIMER);
 
-	//digitalWrite(13, HIGH);	
 	
 	// Main task loop
 	while(1) {
-		// Sample buffer population
-		if (buffer_flag) {
-			if (buffer_tracker) {
-				osc.generateTable(output_buffer_0);
-				buffer_0_ready = 1;
-			} else {
-				osc.generateTable(output_buffer_1);
-				buffer_1_ready = 1;
-			}
-			buffer_flag = 0;
-		}
-		
-		// Mass system state update
-		if (state_flag) {
-			osc.updateState(0.01);
-			state_flag = 0;
-		}
+		eventManager.processEvent();
 	}
 
 }
 
-void tpm_setup(uint8_t prescaler, uint16_t update_timer) {
+// FTM timer setup for mass system state update
+void ftm_setup(uint8_t prescaler, uint16_t update_timer) {
 
 	SIM_SCGC6 |= SIM_SCGC6_FTM0; // Enable FTM0 clock
 	
@@ -105,38 +99,34 @@ void tpm_setup(uint8_t prescaler, uint16_t update_timer) {
 		|FTM_SC_CLKS(1)	// Enable timer, count on internal clock
 		|FTM_SC_PS(__builtin_clz(prescaler)));	
 	
-	// Enable PTM interrupts
-	//NVIC_CLEAR_PENDING(IRQ_FTM0);
 }
 
 // Interrupt routine to track output buffer use & start buffer fill
 void dma_ch0_isr(void) {
+	
+	static uint8_t buffer_tracker = 0;
+
+	eventManager.queueEvent(
+		EventManager::kEventOutBuffer, 
+		buffer_tracker ? 1 : 0,
+		EventManager::kHighPriority);
+
+	buffer_tracker = (buffer_tracker + 1) & 0x1;
 	DMA_CINT = 0; // Clear interrupt bit
-
-	if (buffer_tracker && buffer_0_ready) {
-		buffer_0_ready = 0;
-		buffer_tracker = 0;
-	} else if (!buffer_tracker && buffer_1_ready) {
-		buffer_1_ready = 0;
-		buffer_tracker = 1;
-	} else {
-		//digitalWrite(13, HIGH);
-	}
-	buffer_flag = 1;
-
 }
 
 void systick_isr(void) {
-	// increment millisecond counter
-	// poll system
 	systick_millis_count++;
-	digitalWrite(13, ((systick_millis_count & 0x200) ? HIGH : LOW));
-}
 
-//void systick_isr(void) {}
+	// poll system
+}
 
 // Interrupt routine to time state updates
 void ftm0_isr(void) {
 	FTM0_SC &= ~FTM_SC_TOF;
-	state_flag = 1;
+
+	eventManager.queueEvent(
+		EventManager::kEventState,
+		F_UPDATE,
+		EventManager::kLowPriority);
 }	

@@ -40,6 +40,8 @@ class EventQueue {
 	public:
 
 		EventQueue() {read_ptr = 0; write_ptr = 0;};
+		~EventQueue() {};
+		void Init();
 
 		uint8_t addEvent(EventType, int32_t, uint32_t);
 		uint8_t doEvent();

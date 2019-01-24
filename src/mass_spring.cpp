@@ -14,7 +14,7 @@ MassSystem::MassSystem()
 {
 	// Initialize simulation state
 	for (int i=0; i < N_WEIGHTS; i++) {
-		weights[i].mass = 0.05;
+		weights[i].mass = 0.5;
 		weights[i].pos = 0;
 		weights[i].velocity = 0;
 		weights[i].accel = 0;
@@ -26,7 +26,7 @@ MassSystem::MassSystem()
 	}
 
 	for (int i=0; i < n_weights; i++) {
-		spring_k[i] = 2.0;
+		spring_k[i] = 5.0;
 	}
 
 	// Set interval to defaults
@@ -107,13 +107,13 @@ void MassSystem::updateState(float h) {
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
 	}
 */
-
+	digitalWrite(13, HIGH);
 }
 
 // Fills table with a number of samples from system
 void MassSystem::generateTable(volatile uint16_t* table, uint16_t sample_count, float phase_step, volatile float* phase_offset) {
 	for (uint16_t i=0; i < sample_count; i++) {
-		table[i] = (int16_t)(this->sample(*phase_offset) * 2048) + 2048;
+		table[i] = (int16_t)(this->sample(*phase_offset) * 1024) + 2048;
 		*phase_offset = fmodf((*phase_offset + phase_step), 1.0f);
 	}
 }
