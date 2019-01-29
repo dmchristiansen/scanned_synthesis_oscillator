@@ -2,15 +2,11 @@
  * TODO:
  *
  * Functionality:
- * - Implement event queue
- * 	- Move buffer update handling to queue
- * 	- Move state update handling to queue
- * 	- Move state update trigger to systick isr
  *
  * - Improve state update algorithm 
  * - Add input to excite system
- * 	- Set up button polling / debounce
- * 	- Add button press event queueing / handler
+ *   - Improve variety of pluck
+ *   - Add excite input (not sure how this should work)
  *
  * - Set up switch polling
  * - Set up ADC polling
@@ -22,10 +18,6 @@
  *
  */
 
-
-
-
-
 #include <functional>
 #include "oscillator.h"
 #include "Arduino.h"
@@ -33,18 +25,17 @@
 #include "kinetis.h"
 #include "system.h"
 #include "arm_math.h"
-#include "EventManager.h"
+#include "ui.h"
+
+//using namespace SSO;
 
 void ftm_setup(uint8_t, uint16_t);
 
 volatile uint16_t output_buffer[OUTPUT_BUFFER_SIZE*OUTPUT_BUFFER_COUNT] 
 	__attribute__((aligned (OUTPUT_BUFFER_SIZE*OUTPUT_BUFFER_COUNT*2)));
 
-uint16_t F_UPDATE = 100;
-uint16_t UPDATE_PS = 16;
-uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
-
 EventManager eventManager;
+UserInterface ui;
 
 extern "C" int main(void) {
 	
@@ -61,12 +52,18 @@ extern "C" int main(void) {
 
 	MemberFunctionCallable<Oscillator> genTableCallback(&osc, &Oscillator::generateTable);
 	MemberFunctionCallable<Oscillator> updateStateCallback(&osc, &Oscillator::updateState);
-
+	MemberFunctionCallable<Oscillator> buttonPressCallback(&osc, &Oscillator::pluck);
+	MemberFunctionCallable<Oscillator> potReadCallback(&osc, &Oscillator::setParam);
+	
 	eventManager.addListener(EventManager::kEventOutBuffer, &genTableCallback);
 	eventManager.addListener(EventManager::kEventState, &updateStateCallback);
+	eventManager.addListener(EventManager::kEventButtonPress, &buttonPressCallback);
+	eventManager.addListener(EventManager::kEventPot0, &potReadCallback);
 
   eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
 	eventManager.enableListener(EventManager::kEventState, &updateStateCallback, true);
+	eventManager.enableListener(EventManager::kEventButtonPress, &buttonPressCallback, true);
+	eventManager.enableListener(EventManager::kEventPot0, &potReadCallback, true);
 
 	pinMode(13, OUTPUT);
 
@@ -119,6 +116,7 @@ void systick_isr(void) {
 	systick_millis_count++;
 
 	// poll system
+	ui.poll();
 }
 
 // Interrupt routine to time state updates
@@ -130,3 +128,4 @@ void ftm0_isr(void) {
 		F_UPDATE,
 		EventManager::kLowPriority);
 }	
+

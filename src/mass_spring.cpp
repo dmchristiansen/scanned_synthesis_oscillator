@@ -40,9 +40,14 @@ void MassSystem::excite(float excitation[]) {
 	}
 }
 
-void MassSystem::pluck(float pluck[]) {
+void MassSystem::pluck() {
 	for (int i=0; i < n_weights; i++) {
-		weights[i].pos += pluck[i];
+		//weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
+		if ((i < n_weights / 4) || (i > n_weights - (n_weights / 4))) {
+			weights[i].pos = 1.0f;
+		} else {
+			weights[i].pos = 0.0f;
+		}
 	}
 }
 
@@ -107,7 +112,6 @@ void MassSystem::updateState(float h) {
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
 	}
 */
-	digitalWrite(13, HIGH);
 }
 
 // Fills table with a number of samples from system

@@ -178,7 +178,13 @@ public:
         kEventUser9,
 
 				kEventState,
-				kEventOutBuffer
+				kEventOutBuffer,
+				kEventButtonPress,
+
+				kEventPot0,
+				kEventPot1,
+				kEventPot2,
+				kEventPot3
 		};
 
 

@@ -39,7 +39,7 @@ class MassSystem
 
     MassSystem();
 		void excite(float[]);
-		void pluck(float[]);
+		void pluck();
 		float sample(float);
 		void updateState(float);
 		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);

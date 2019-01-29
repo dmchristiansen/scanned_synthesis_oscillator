@@ -113,6 +113,8 @@ TCPP_FILES := $(wildcard $(COREPATH)/*.cpp)
 C_FILES := $(wildcard src/*.c)
 #CPP_FILES := $(shell find $(src/) -name '*.cpp')
 CPP_FILES := $(wildcard src/*.cpp)
+CPP_FILES += $(wildcard src/ext/*.cpp)
+CPP_FILES += $(wildcard src/ext/*/*.cpp)
 INO_FILES := $(wildcard src/*.ino)
 
 # include paths for libraries

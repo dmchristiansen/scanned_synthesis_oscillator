@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "mass_spring.h"
 #include <Arduino.h>
+
 class Oscillator {
 	
 	private:
@@ -26,9 +27,13 @@ class Oscillator {
 
 		void generateTable(int, int);
 		void updateState(int, int);		
+		void pluck(int, int);
+		void setParam(int, int);
+
 		void setStep(float step) {phase_step = step;};	
 
 };
+
 
 void Oscillator::Init(volatile uint16_t** buf, float freq) {
 	buffer_list = buf;
@@ -39,6 +44,8 @@ void Oscillator::Init(volatile uint16_t** buf, float freq) {
 }
 
 void Oscillator::generateTable(int code, int param) {
+
+	// this should be rewritten to work with a larger number of buffers
 
 	//model.generateTable(buffer_list[param], OUTPUT_BUFFER_SIZE, phase_step, &phase_accumulator);
 
@@ -51,6 +58,23 @@ void Oscillator::generateTable(int code, int param) {
 
 void Oscillator::updateState(int code, int param) {
 	model.updateState(1/(float)param);
+}
+
+void Oscillator::pluck(int code, int param) {
+	model.pluck();
+}
+
+void Oscillator::setParam(int code, int param) {
+	
+	int32_t potNumber = code - EventManager::kEventPot0;
+
+	switch (potNumber) {
+		case (0):
+			setStep((float)param/(float)F_SAMPLE);
+			break;
+		default:
+			break;
+	}
 }
 
 #endif
