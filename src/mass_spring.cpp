@@ -122,5 +122,12 @@ void MassSystem::generateTable(volatile uint16_t* table, uint16_t sample_count, 
 	}
 }
 
+void MassSystem::setMass(float newMass) {
+	
+	for (int i = 0; i < n_weights; i++) {
+		weights[i].mass = newMass;
+	}
+
+}
 
 

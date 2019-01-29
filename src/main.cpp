@@ -3,19 +3,35 @@
  *
  * Functionality:
  *
- * - Improve state update algorithm 
  * - Add input to excite system
  *   - Improve variety of pluck
  *   - Add excite input (not sure how this should work)
  *
- * - Set up switch polling
- * - Set up ADC polling
  * - Add add parameter control pots
+ *   - coarse tune
+ *   - fine tune
+ *   - mass
+ *   - spring k
+ *   - damp
+ *   - hammer quality
+ *   - frequency cv attenuation
+ *
+ * - Add CV inputs
+ *   - hammer trigger
+ *   - 1V/oct
+ *   - mass
+ *   - spring k
+ *   - damp
+ *   - hammer quality?
  *
  * Structure:
  * - Abstract from hardware slightly (module interfaces)
  * - Split DAC setup into DMAMUX/eDMA & DAC/PDB setups
+ * - Make ADC setup per-module / re-usable 
  *
+ * Optimization:
+ * - Improve state update algorithm
+ * - Use DMA to control ADC read interleaving
  */
 
 #include <functional>
@@ -59,11 +75,13 @@ extern "C" int main(void) {
 	eventManager.addListener(EventManager::kEventState, &updateStateCallback);
 	eventManager.addListener(EventManager::kEventButtonPress, &buttonPressCallback);
 	eventManager.addListener(EventManager::kEventPot0, &potReadCallback);
+	eventManager.addListener(EventManager::kEventPot1, &potReadCallback);
 
   eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
 	eventManager.enableListener(EventManager::kEventState, &updateStateCallback, true);
 	eventManager.enableListener(EventManager::kEventButtonPress, &buttonPressCallback, true);
 	eventManager.enableListener(EventManager::kEventPot0, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventPot1, &potReadCallback, true);
 
 	pinMode(13, OUTPUT);
 

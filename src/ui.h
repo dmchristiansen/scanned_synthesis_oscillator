@@ -23,8 +23,8 @@ class UserInterface {
 		ButtonInterface buttons;
 		ADCInterface adc;
 
-		static const uint8_t adcPinCount = 1;
-		uint8_t adcPins[adcPinCount] = {14};
+		static const uint8_t adcPinCount = 3;
+		uint8_t adcPins[adcPinCount] = {14, 15, 4};
 		uint8_t adcState;
 		
 

@@ -43,6 +43,7 @@ class MassSystem
 		float sample(float);
 		void updateState(float);
 		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);
+		void setMass(float);
 };
 
 #endif

@@ -31,6 +31,8 @@ class Oscillator {
 		void setParam(int, int);
 
 		void setStep(float step) {phase_step = step;};	
+		
+		float mapValueToMass(int32_t);
 
 };
 
@@ -72,9 +74,18 @@ void Oscillator::setParam(int code, int param) {
 		case (0):
 			setStep((float)param/(float)F_SAMPLE);
 			break;
+		case (1):
+			model.setMass(mapValueToMass(param));
+			break;
 		default:
 			break;
 	}
+}
+
+float Oscillator::mapValueToMass(int32_t param) {
+	
+	return ((float)param * 10) / 4096.0;
+
 }
 
 #endif
