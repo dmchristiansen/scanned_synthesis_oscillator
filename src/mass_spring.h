@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 #include "system.h"
+#include <stdlib.h>
+#include <time.h>
 
 #define N_WEIGHTS 20
 
@@ -34,7 +36,9 @@ class MassSystem
 
 		uint32_t update_interval;
 		uint32_t interval_counter;
-    
+
+		const float minMass = 0.01;
+
 	public:
 
     MassSystem();
@@ -44,6 +48,8 @@ class MassSystem
 		void updateState(float);
 		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);
 		void setMass(float);
+		void setSpring(float);
+		void setZ(float);
 };
 
 #endif

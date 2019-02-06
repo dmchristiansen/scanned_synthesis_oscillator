@@ -181,10 +181,12 @@ public:
 				kEventOutBuffer,
 				kEventButtonPress,
 
-				kEventPot0,
-				kEventPot1,
-				kEventPot2,
-				kEventPot3
+				kEventUpdateFreq,
+				kEventUpdateMass,
+				kEventUpdateSpring,
+				kEventUpdateDamp,
+				kEventUpdateShape
+				
 		};
 
 

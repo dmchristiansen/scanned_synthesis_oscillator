@@ -28,6 +28,7 @@
  * - Abstract from hardware slightly (module interfaces)
  * - Split DAC setup into DMAMUX/eDMA & DAC/PDB setups
  * - Make ADC setup per-module / re-usable 
+ * - Improve event queue to accept functions with arbitrary signatures
  *
  * Optimization:
  * - Improve state update algorithm
@@ -74,14 +75,20 @@ extern "C" int main(void) {
 	eventManager.addListener(EventManager::kEventOutBuffer, &genTableCallback);
 	eventManager.addListener(EventManager::kEventState, &updateStateCallback);
 	eventManager.addListener(EventManager::kEventButtonPress, &buttonPressCallback);
-	eventManager.addListener(EventManager::kEventPot0, &potReadCallback);
-	eventManager.addListener(EventManager::kEventPot1, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateFreq, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateMass, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateSpring, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateDamp, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateShape, &potReadCallback);
 
   eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
 	eventManager.enableListener(EventManager::kEventState, &updateStateCallback, true);
 	eventManager.enableListener(EventManager::kEventButtonPress, &buttonPressCallback, true);
-	eventManager.enableListener(EventManager::kEventPot0, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventPot1, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateFreq, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateMass, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateSpring, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateDamp, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateShape, &potReadCallback, true);
 
 	pinMode(13, OUTPUT);
 

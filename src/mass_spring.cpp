@@ -32,6 +32,8 @@ MassSystem::MassSystem()
 	// Set interval to defaults
 	update_interval = 10;
 	interval_counter = 0;
+
+	//srand(time(NULL));
 }
 
 void MassSystem::excite(float excitation[]) {
@@ -42,13 +44,29 @@ void MassSystem::excite(float excitation[]) {
 
 void MassSystem::pluck() {
 	for (int i=0; i < n_weights; i++) {
+		
+		// sine
 		//weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
+		
+		// square
+		/*
 		if ((i < n_weights / 4) || (i > n_weights - (n_weights / 4))) {
 			weights[i].pos = 1.0f;
 		} else {
 			weights[i].pos = 0.0f;
 		}
+		*/
+
+		// saw
+		//weights[i].pos = (2.0*i / (float)n_weights) - 1;
+
+		// noise
+		weights[i].pos = (float)(rand() % 100 - 50) / 50.0;
+
+		weights[i].accel = 0;
+		weights[i].velocity = 0;
 	}
+
 }
 
 // Samples mass system at location indicated by phase pointer
@@ -69,12 +87,12 @@ float MassSystem::sample(float phase) {
 void MassSystem::updateState(float h) {
 	// Update velocities from accelerations
 	for (int i=0; i < N_WEIGHTS; i++) {
-		weights[i].velocity += h * weights[i].accel;
+		weights[i].velocity += (h * weights[i].accel);
 	}
 
 	// Update positions from velocities
 	for (int i=0; i < N_WEIGHTS; i++) {
-		weights[i].pos += h * weights[i].velocity;
+		weights[i].pos += (h * weights[i].velocity);
 	}
 
 	/*
@@ -90,7 +108,8 @@ void MassSystem::updateState(float h) {
 
 	
 	// Update accelerations from positions (for next update)
-	float dist = weights[0].pos - weights[0].pos;
+/*
+	float dist = weights[n_weights - 1].pos - weights[0].pos;
 	for (int i=0; i < N_WEIGHTS; i++) {
 		float prev_dist = dist;
 		dist = weights[(i + 1) % n_weights].pos - weights[i].pos;
@@ -98,9 +117,9 @@ void MassSystem::updateState(float h) {
 			(((dist - prev_dist) * spring_k[i]) - 
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
 	}
+*/
 	
 	
-/*	
 	// Update accelerations from positions (for next update)
 	for (int i=0; i < N_WEIGHTS; i++) {
 		int prev_i = (i - 1 + N_WEIGHTS) % N_WEIGHTS;
@@ -111,7 +130,7 @@ void MassSystem::updateState(float h) {
 			(weights[next_i].pos - weights[i].pos)) * spring_k[i]) -
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
 	}
-*/
+
 }
 
 // Fills table with a number of samples from system
@@ -123,11 +142,26 @@ void MassSystem::generateTable(volatile uint16_t* table, uint16_t sample_count, 
 }
 
 void MassSystem::setMass(float newMass) {
-	
+
+	if (newMass < minMass) (newMass = minMass); 
+
 	for (int i = 0; i < n_weights; i++) {
 		weights[i].mass = newMass;
 	}
 
 }
 
+void MassSystem::setSpring(float newSpring) {
+	
+	for (int i = 0; i < n_weights; i++) {
+		spring_k[i] = newSpring;
+	}
+}
+
+void MassSystem::setZ(float newDamp) {
+
+	for (int i = 0; i < n_weights; i++) {
+		weights[i].z = newDamp;
+	}
+}	
 

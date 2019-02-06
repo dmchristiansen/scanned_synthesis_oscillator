@@ -27,7 +27,7 @@ void UserInterface::poll() {
 	// digitalWrite(13, digitalRead(7));
 	digitalWrite(13, (GPIOD_PDIR & (1 << 2)) ? HIGH : LOW);
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < buttonCount; i++) {
 		if (buttons.justPressed(i)) {
 			eventManager.queueEvent(
 				EventManager::kEventButtonPress,
@@ -36,17 +36,53 @@ void UserInterface::poll() {
 		}
 	}
 
-	
-	pinValue = adc.readValue();
-	if (pinValue != -1) {
-		eventManager.queueEvent(
-			EventManager::kEventPot0 + adcState,
-			pinValue,
-			EventManager::kLowPriority);
+	/* This should all be pushed down into a CV-Input class */
 
+	// read completed conversion	
+	pinValue = adc.readValue();
+	if (pinValue != -1)
+		pinValueBuffer[adcState] = pinValue;
+
+	// there should be a generic map function...
+	// Event queue should be able to pass floats...
+	int32_t newFreq = pinValueBuffer[COARSE_PITCH]
+		+ pinValueBuffer[FINE_PITCH] / 10;
+	int32_t newMass = pinValueBuffer[MASS_POT]; 
+	int32_t newSpring = pinValueBuffer[SPRING_POT];
+	int32_t newDamp = pinValueBuffer[DAMP_POT];
+	int32_t newShape = pinValueBuffer[SHAPE_POT];
+
+	// queue update events
+	eventManager.queueEvent(
+		EventManager::kEventUpdateFreq,
+		newFreq,
+		EventManager::kLowPriority);
+	
+	eventManager.queueEvent(
+		EventManager::kEventUpdateMass,
+		newMass,
+		EventManager::kLowPriority);
+	
+	eventManager.queueEvent(
+		EventManager::kEventUpdateSpring,
+		newSpring,
+		EventManager::kLowPriority);
+	
+	eventManager.queueEvent(
+		EventManager::kEventUpdateDamp,
+		newDamp,
+		EventManager::kLowPriority);
+	
+	eventManager.queueEvent(
+		EventManager::kEventUpdateShape,
+		newShape,
+		EventManager::kLowPriority);
+
+
+	// start conversion on next pin
 	adcState = (adcState + 1) % adcPinCount;
-	adc.startSingleRead(adcPins[adcState]);
-	}
+	adc.startSingleRead(adcPins[adcState].pinNumber);
+	
 
 }
 
