@@ -33,7 +33,17 @@ MassSystem::MassSystem()
 	update_interval = 10;
 	interval_counter = 0;
 
-	//srand(time(NULL));
+	// initialize values in hammer table
+	for (int i = 0; i < n_weights; i++) {
+		// sine
+		hammerTable[0][i] = sinf((float)i * (6.238 / (float)n_weights));
+		// saw
+		hammerTable[1][i] = (2.0 * i / (float)n_weights) - 1;
+		// square
+		hammerTable[2][i] = ((i < n_weights / 4) || (i > n_weights * 0.75)) ? 0.0f : 1.0f;
+		// noise
+		hammerTable[3][i] = 0.0f;
+	}
 }
 
 void MassSystem::excite(float excitation[]) {
@@ -46,7 +56,7 @@ void MassSystem::pluck() {
 	for (int i=0; i < n_weights; i++) {
 		
 		// sine
-		//weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
+		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
 		
 		// square
 		/*
@@ -61,7 +71,7 @@ void MassSystem::pluck() {
 		//weights[i].pos = (2.0*i / (float)n_weights) - 1;
 
 		// noise
-		weights[i].pos = (float)(rand() % 100 - 50) / 50.0;
+		//weights[i].pos = (float)(rand() % 100 - 50) / 50.0;
 
 		weights[i].accel = 0;
 		weights[i].velocity = 0;

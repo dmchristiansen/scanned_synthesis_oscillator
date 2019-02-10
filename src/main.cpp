@@ -1,39 +1,3 @@
-/*
- * TODO:
- *
- * Functionality:
- *
- * - Add input to excite system
- *   - Improve variety of pluck
- *   - Add excite input (not sure how this should work)
- *
- * - Add add parameter control pots
- *   - coarse tune
- *   - fine tune
- *   - mass
- *   - spring k
- *   - damp
- *   - hammer quality
- *   - frequency cv attenuation
- *
- * - Add CV inputs
- *   - hammer trigger
- *   - 1V/oct
- *   - mass
- *   - spring k
- *   - damp
- *   - hammer quality?
- *
- * Structure:
- * - Abstract from hardware slightly (module interfaces)
- * - Split DAC setup into DMAMUX/eDMA & DAC/PDB setups
- * - Make ADC setup per-module / re-usable 
- * - Improve event queue to accept functions with arbitrary signatures
- *
- * Optimization:
- * - Improve state update algorithm
- * - Use DMA to control ADC read interleaving
- */
 
 #include <functional>
 #include "oscillator.h"

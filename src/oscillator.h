@@ -32,7 +32,6 @@ class Oscillator {
 
 		void setStep(float step) {phase_step = step;};	
 		
-		float mapValue(int32_t, float);
 
 };
 
@@ -70,26 +69,20 @@ void Oscillator::setParam(int code, int param) {
 	
 	switch (code) {
 		case (EventManager::kEventUpdateFreq):
-			setStep((float)param/(float)F_SAMPLE);
+			setStep(static_cast<float>(param)/(float)F_SAMPLE);
 			break;
 		case (EventManager::kEventUpdateMass):
-			model.setMass(mapValue(param, 10.0f));
+			model.setMass(static_cast<float>(param));
 			break;
 		case (EventManager::kEventUpdateSpring):
-			model.setSpring(mapValue(param, 30.0f));
+			model.setSpring(static_cast<float>(param));
 			break;
 		case (EventManager::kEventUpdateDamp):
-			model.setZ(mapValue(param, 50.0f));
+			model.setZ(static_cast<float>(param));
 			break;
 		default:
 			break;
 	}
-}
-
-float Oscillator::mapValue(int32_t param, float scale) {
-	
-	return ((float)param * scale) / 4096.0;
-
 }
 
 #endif

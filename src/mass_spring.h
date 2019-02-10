@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include "system.h"
 #include <stdlib.h>
-#include <time.h>
 
 #define N_WEIGHTS 20
 
@@ -38,6 +37,8 @@ class MassSystem
 		uint32_t interval_counter;
 
 		const float minMass = 0.01;
+
+		float hammerTable[5][N_WEIGHTS] = {};
 
 	public:
 
