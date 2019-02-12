@@ -19,6 +19,7 @@ MassSystem::MassSystem()
 		weights[i].velocity = 0;
 		weights[i].accel = 0;
 		weights[i].z = 0.25;
+		weights[i].center = 1.0;
 	}
 	for (int i=0; i < n_weights; i++) {
 		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
@@ -96,7 +97,7 @@ float MassSystem::sample(float phase) {
 }
 
 void MassSystem::updateState(float h) {
-	float fk, fz;
+	float fk, fc, fz;
 
 	// Update velocities from accelerations
 	for (int i=0; i < N_WEIGHTS; i++) {
@@ -145,8 +146,10 @@ void MassSystem::updateState(float h) {
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
 		*/
 		
-		// force from springs
-		fk = ((weights[prev_i].pos - weights[i].pos) +
+		// force from centering springs
+		fc = (weights[i].pos * weights[i].center * -1.0f);
+		// force from springs between weights
+		fk = fc + ((weights[prev_i].pos - weights[i].pos) +
 			(weights[next_i].pos - weights[i].pos)) * spring_k[i];
 		// opposing damping force
 		fz = weights[i].z * weights[i].velocity;
@@ -193,4 +196,11 @@ void MassSystem::setZ(float newDamp) {
 void MassSystem::setShape(float newShape) {
 	hammerIndex = newShape;
 }
+
+void MassSystem::setCenter(float newCenter) {
+	for (int i = 0; i < n_weights; i++) {
+		weights[i].center = newCenter;
+	}
+}
+
 

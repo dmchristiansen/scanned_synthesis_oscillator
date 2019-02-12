@@ -40,7 +40,7 @@
 // Size of the listener list.  Adjust as appropriate for your application.
 // Requires a total of sizeof(*f())+sizeof(int)+sizeof(boolean) bytes of RAM for each unit of size
 #ifndef EVENTMANAGER_LISTENER_LIST_SIZE
-#define EVENTMANAGER_LISTENER_LIST_SIZE		8
+#define EVENTMANAGER_LISTENER_LIST_SIZE		16
 #endif
 
 // Size of the event two queues.  Adjust as appropriate for your application.
@@ -185,6 +185,7 @@ public:
 				kEventUpdateMass,
 				kEventUpdateSpring,
 				kEventUpdateDamp,
+				kEventUpdateCenter,
 				kEventUpdateShape
 				
 		};

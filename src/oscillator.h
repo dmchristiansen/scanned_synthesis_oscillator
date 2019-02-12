@@ -80,6 +80,9 @@ void Oscillator::setParam(int code, int param) {
 		case (EventManager::kEventUpdateDamp):
 			model.setZ(*reinterpret_cast<float*>(&param));
 			break;
+		case (EventManager::kEventUpdateCenter):
+			model.setCenter(*reinterpret_cast<float*>(&param));
+			break;
 		case (EventManager::kEventUpdateShape):
 			model.setShape(*reinterpret_cast<float*>(&param));
 			break;

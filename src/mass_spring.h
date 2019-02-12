@@ -23,6 +23,7 @@ struct Weight_t
 	volatile float velocity;
 	volatile float accel;
 	volatile float z;
+	volatile float center;
 };
 
 class MassSystem 
@@ -52,6 +53,7 @@ class MassSystem
 		void setSpring(float);
 		void setZ(float);
 		void setShape(float);
+		void setCenter(float);
 };
 
 #endif

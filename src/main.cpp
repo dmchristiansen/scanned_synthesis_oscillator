@@ -47,6 +47,7 @@ extern "C" int main(void) {
 	eventManager.addListener(EventManager::kEventUpdateMass, &potReadCallback);
 	eventManager.addListener(EventManager::kEventUpdateSpring, &potReadCallback);
 	eventManager.addListener(EventManager::kEventUpdateDamp, &potReadCallback);
+	eventManager.addListener(EventManager::kEventUpdateCenter, &potReadCallback);
 	eventManager.addListener(EventManager::kEventUpdateShape, &potReadCallback);
 
   eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
@@ -56,6 +57,7 @@ extern "C" int main(void) {
 	eventManager.enableListener(EventManager::kEventUpdateMass, &potReadCallback, true);
 	eventManager.enableListener(EventManager::kEventUpdateSpring, &potReadCallback, true);
 	eventManager.enableListener(EventManager::kEventUpdateDamp, &potReadCallback, true);
+	eventManager.enableListener(EventManager::kEventUpdateCenter, &potReadCallback, true);
 	eventManager.enableListener(EventManager::kEventUpdateShape, &potReadCallback, true);
 
 

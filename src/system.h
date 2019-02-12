@@ -20,7 +20,7 @@
 
 	const uint16_t ADC_MAX = (1 << 16) - 1;
 
-	const uint16_t F_UPDATE = 1000;
+	const uint16_t F_UPDATE = 100;
 	const uint16_t UPDATE_PS = 16;
 	const uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
 

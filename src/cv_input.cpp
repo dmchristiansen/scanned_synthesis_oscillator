@@ -18,14 +18,8 @@ void CVInput::convert() {
 	// read completed conversion	
 	pinValue = (int32_t)adc.readValue();
 	if (pinValue != -1) {
-		//if (pinValue < 5) {
-			//pinValueBuffer[adcState] = 0;
-		//} else {
-			pinValueBuffer[adcState] = (uint16_t)(pinValue & 0xFFFF);
-		//}
+		pinValueBuffer[adcState] = (uint16_t)(pinValue & 0xFFFF);
 	}
-
-
 
 	// Event queue should be able to pass floats...
 	float newFreq = mapPitch(
@@ -36,6 +30,7 @@ void CVInput::convert() {
 	float newMass = mapCV(pinValueBuffer[MASS_POT], MASS_POT); 
 	float newSpring = mapCV(pinValueBuffer[SPRING_POT], SPRING_POT);
 	float newDamp = mapCV(pinValueBuffer[DAMP_POT], DAMP_POT);
+	float newCenter = mapCV(pinValueBuffer[CENTER_POT], CENTER_POT);
 	float newShape = mapCV(pinValueBuffer[SHAPE_POT], SHAPE_POT);
 
 	// queue update events
@@ -57,6 +52,11 @@ void CVInput::convert() {
 	eventManager.queueEvent(
 		EventManager::kEventUpdateDamp,
 		*reinterpret_cast<int32_t*>(&newDamp),
+		EventManager::kLowPriority);
+	
+	eventManager.queueEvent(
+		EventManager::kEventUpdateCenter,
+		*reinterpret_cast<int32_t*>(&newCenter),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
@@ -89,7 +89,11 @@ float CVInput::mapCV(uint16_t input, int32_t pin) {
 			break;
 		case (LOG):
 			result = adcPins[pin].scale * 
-				(adcPins[pin].min * powf(adcPins[pin].max, (float)input/adcMax) + adcPins[pin].min);
+				(adcPins[pin].min * powf(adcPins[pin].max, (float)input/adcMax) - adcPins[pin].min);
+			break;
+		case (INV):
+			result = ((float)input * ((adcPins[pin].min - adcPins[pin].max)/adcMax)) 
+				+ adcPins[pin].max + adcPins[pin].max;
 			break;
 		default:
 			result = 0.0f;
@@ -113,17 +117,7 @@ float CVInput::mapValueToVolt(uint16_t input) {
 }
 
 // map values for coarse, fine, and v/oct pitch controls into target frequency
-float CVInput::mapPitch(float volts) {
-	/*
-		This should be something like:
-		base frequency (C4) x 
-		2 ^ ((map(coarse) + map(fine)/10) + map(voct))
-		Maybe?
-		
-	*/
-	
-	return baseFrequency * powf(2, (volts));
-}
+float CVInput::mapPitch(float volts) { return baseFrequency * powf(2, (volts)); }
 
 
 
