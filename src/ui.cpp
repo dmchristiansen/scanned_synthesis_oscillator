@@ -10,7 +10,8 @@
 #include "ui.h"
 
 void UserInterface::Init() {
-	
+
+	cv_input.Init();	
 
 }
 

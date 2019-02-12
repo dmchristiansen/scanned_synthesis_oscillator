@@ -20,11 +20,12 @@ void ADCInterface::Init() {
 		|ADC_CFG1_ADICLK(0)	// Select input clock (0 = bus clock)
 	);
 
+
 	ADC1_CFG2 |= ADC_CFG2_MUXSEL;	// select ADCxxb channels
 
 	ADC1_SC3 =
 		(ADC_SC3_AVGE			// Enable hardware averaging
-		|ADC_SC3_AVGS(0)	// # of samples to average (0 = 4)
+		|ADC_SC3_AVGS(1)	// # of samples to average (0 = 4)
 	);
 
 	// calibration sequence
@@ -34,7 +35,6 @@ void ADCInterface::Init() {
 		if (!(ADC1_SC3 & ADC_SC3_CALF)) break; // if sucessful, end sequence
 	}
 
-	
 }
 
 // starts a read on specified pin

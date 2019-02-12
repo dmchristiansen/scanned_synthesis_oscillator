@@ -37,12 +37,15 @@ MassSystem::MassSystem()
 	for (int i = 0; i < n_weights; i++) {
 		// sine
 		hammerTable[0][i] = sinf((float)i * (6.238 / (float)n_weights));
+		// triangle
+		if (i < n_weights/4) hammerTable[1][i] = ((4.0 * i) / (float)n_weights);
+		else if (i > (n_weights - (n_weights / 4))) 
+			hammerTable[1][i] = ((4.0 * ((i + n_weights / 4) % n_weights)) / (float)n_weights) - 1.0;
+		else hammerTable[1][i] = 1.0 - ((4.0 * (i - n_weights / 4)) / (float)n_weights);
 		// saw
-		hammerTable[1][i] = (2.0 * i / (float)n_weights) - 1;
+		hammerTable[2][i] = (2.0 * ((i + (n_weights / 2)) % n_weights) / (float)n_weights) - 1;
 		// square
-		hammerTable[2][i] = ((i < n_weights / 4) || (i > n_weights * 0.75)) ? 0.0f : 1.0f;
-		// noise
-		hammerTable[3][i] = 0.0f;
+		hammerTable[3][i] = (i <= (n_weights / 2)) ? 1.0f : -1.0f;
 	}
 }
 
@@ -53,28 +56,26 @@ void MassSystem::excite(float excitation[]) {
 }
 
 void MassSystem::pluck() {
-	for (int i=0; i < n_weights; i++) {
-		
-		// sine
-		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
-		
-		// square
+	float integral;
+	float fractional = std::modf(hammerIndex, &integral);
+	int32_t tableIndex = (int32_t)integral;	
+	
+	for (int32_t weightIndex = 0; weightIndex < n_weights; weightIndex++) {
+	
+		// generate new noise values each time...
 		/*
-		if ((i < n_weights / 4) || (i > n_weights - (n_weights / 4))) {
-			weights[i].pos = 1.0f;
-		} else {
-			weights[i].pos = 0.0f;
+		if (tableIndex == 3) {
+			hammerTable[3][weightIndex] = (float)((rand() % 100 - 50) / 50.0f);
 		}
 		*/
 
-		// saw
-		//weights[i].pos = (2.0*i / (float)n_weights) - 1;
+		// interpolate between hammer shapes
+		weights[weightIndex].pos = 
+			(hammerTable[tableIndex][weightIndex] * (1.0f - fractional)) + 
+			(hammerTable[(tableIndex + 1) % 4][weightIndex] * fractional);
 
-		// noise
-		//weights[i].pos = (float)(rand() % 100 - 50) / 50.0;
-
-		weights[i].accel = 0;
-		weights[i].velocity = 0;
+		weights[weightIndex].accel = 0;
+		weights[weightIndex].velocity = 0;
 	}
 
 }
@@ -95,6 +96,8 @@ float MassSystem::sample(float phase) {
 }
 
 void MassSystem::updateState(float h) {
+	float fk, fz;
+
 	// Update velocities from accelerations
 	for (int i=0; i < N_WEIGHTS; i++) {
 		weights[i].velocity += (h * weights[i].accel);
@@ -135,10 +138,22 @@ void MassSystem::updateState(float h) {
 		int prev_i = (i - 1 + N_WEIGHTS) % N_WEIGHTS;
 		int next_i = (i + 1) % N_WEIGHTS;
 		// This uses a simplified version of the calculation...
+		/*
 		weights[i].accel = 
 			((((weights[prev_i].pos - weights[i].pos) +
 			(weights[next_i].pos - weights[i].pos)) * spring_k[i]) -
 			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
+		*/
+		
+		// force from springs
+		fk = ((weights[prev_i].pos - weights[i].pos) +
+			(weights[next_i].pos - weights[i].pos)) * spring_k[i];
+		// opposing damping force
+		fz = weights[i].z * weights[i].velocity;
+		// limit damping force
+		if (((fk > 0) && (fz > fk)) || ((fk < 0) && (fz < fk))) fz = fk;
+		// total acceleration
+		weights[i].accel = (fk - fz) / weights[i].mass;
 	}
 
 }
@@ -146,7 +161,7 @@ void MassSystem::updateState(float h) {
 // Fills table with a number of samples from system
 void MassSystem::generateTable(volatile uint16_t* table, uint16_t sample_count, float phase_step, volatile float* phase_offset) {
 	for (uint16_t i=0; i < sample_count; i++) {
-		table[i] = (int16_t)(this->sample(*phase_offset) * 1024) + 2048;
+		table[i] = (int16_t)(this->sample(*phase_offset) * 512) + 2048;
 		*phase_offset = fmodf((*phase_offset + phase_step), 1.0f);
 	}
 }
@@ -174,4 +189,8 @@ void MassSystem::setZ(float newDamp) {
 		weights[i].z = newDamp;
 	}
 }	
+
+void MassSystem::setShape(float newShape) {
+	hammerIndex = newShape;
+}
 

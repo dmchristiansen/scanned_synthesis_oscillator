@@ -4,27 +4,29 @@
  */
 
 #include "cv_input.h"
+#include "Arduino.h"
 
 void CVInput::Init() {
 
 	adcState = 0;
-
+	adc.Init();
 }
 
 void CVInput::convert() {
 
 	int32_t pinValue;
 	// read completed conversion	
-	pinValue = adc.readValue();
+	pinValue = (int32_t)adc.readValue();
 	if (pinValue != -1) {
 		//if (pinValue < 5) {
 			//pinValueBuffer[adcState] = 0;
 		//} else {
-			pinValueBuffer[adcState] = pinValue;
+			pinValueBuffer[adcState] = (uint16_t)(pinValue & 0xFFFF);
 		//}
 	}
 
-	// there should be a generic map function...
+
+
 	// Event queue should be able to pass floats...
 	float newFreq = mapPitch(
 		mapCV(pinValueBuffer[COARSE_PITCH], COARSE_PITCH)
@@ -36,32 +38,30 @@ void CVInput::convert() {
 	float newDamp = mapCV(pinValueBuffer[DAMP_POT], DAMP_POT);
 	float newShape = mapCV(pinValueBuffer[SHAPE_POT], SHAPE_POT);
 
-	digitalWrite(13, pinValueBuffer[DAMP_POT] < 2 ? HIGH : LOW);
-
 	// queue update events
 	eventManager.queueEvent(
 		EventManager::kEventUpdateFreq,
-		static_cast<int32_t>(newFreq),
+		*reinterpret_cast<int32_t*>(&newFreq),
 		EventManager::kLowPriority);
-	
+
 	eventManager.queueEvent(
 		EventManager::kEventUpdateMass,
-		static_cast<int32_t>(newMass),
+		*reinterpret_cast<int32_t*>(&newMass),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateSpring,
-		static_cast<int32_t>(newSpring),
+		*reinterpret_cast<int32_t*>(&newSpring),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateDamp,
-		static_cast<int32_t>(newDamp),
+		*reinterpret_cast<int32_t*>(&newDamp),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateShape,
-		static_cast<int32_t>(newShape),
+		*reinterpret_cast<int32_t*>(&newShape),
 		EventManager::kLowPriority);
 
 
@@ -71,28 +71,32 @@ void CVInput::convert() {
 }
 
 // map CV input from ADC to meaningful value
-float CVInput::mapCV(uint16_t input, uint8_t pin) {
+float CVInput::mapCV(uint16_t input, int32_t pin) {
 	
 	float result;
 
 	switch (adcPins[pin].mapping) {
 		case (LIN):
 			result = 
-				input * ((adcPins[pin].max - adcPins[pin].min)/4096) 
+				(float)input * ((adcPins[pin].max - adcPins[pin].min)/adcMax) 
 				+ adcPins[pin].min;
 			if (result < adcPins[pin].min) result = adcPins[pin].min;
-			else if (result < adcPins[pin].max) result = adcPins[pin].max;
-			return result;
+			else if (result > adcPins[pin].max) result = adcPins[pin].max;
 			break;
 		case (EXP):
 			result = powf(2.0f, ((float)input / adcPins[pin].scale));
 			if (result > adcPins[pin].max) result = adcPins[pin].max;
-			return result;
+			break;
+		case (LOG):
+			result = adcPins[pin].scale * 
+				(adcPins[pin].min * powf(adcPins[pin].max, (float)input/adcMax) + adcPins[pin].min);
 			break;
 		default:
-			return 0.0f;
+			result = 0.0f;
 			break;
 	};
+
+	return result;
 }
 
 // map input value to voltage
@@ -100,7 +104,7 @@ float CVInput::mapCV(uint16_t input, uint8_t pin) {
 // then reverse op-amp transform (two functions?)
 float CVInput::mapValueToVolt(uint16_t input) {
 	// map from ADC value back to 0V - 3.3V range
-	float result = (float)input * (3.3/4096);	
+	float result = (float)input * (3.3/adcMax);	
 	
 	// CV input range: -5V to 5V
 	// op-amp maps to 0V to 3.3V, through inverting input

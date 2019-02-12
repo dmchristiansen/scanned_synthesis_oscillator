@@ -69,16 +69,19 @@ void Oscillator::setParam(int code, int param) {
 	
 	switch (code) {
 		case (EventManager::kEventUpdateFreq):
-			setStep(static_cast<float>(param)/(float)F_SAMPLE);
+			setStep((*reinterpret_cast<float*>(&param))/(float)F_SAMPLE);
 			break;
 		case (EventManager::kEventUpdateMass):
-			model.setMass(static_cast<float>(param));
+			model.setMass(*reinterpret_cast<float*>(&param));
 			break;
 		case (EventManager::kEventUpdateSpring):
-			model.setSpring(static_cast<float>(param));
+			model.setSpring(*reinterpret_cast<float*>(&param));
 			break;
 		case (EventManager::kEventUpdateDamp):
-			model.setZ(static_cast<float>(param));
+			model.setZ(*reinterpret_cast<float*>(&param));
+			break;
+		case (EventManager::kEventUpdateShape):
+			model.setShape(*reinterpret_cast<float*>(&param));
 			break;
 		default:
 			break;

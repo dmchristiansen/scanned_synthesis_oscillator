@@ -20,16 +20,20 @@ UserInterface ui;
 
 extern "C" int main(void) {
 	
+	pinMode(13, OUTPUT);
+	
 	volatile uint16_t* output_buffer_list[OUTPUT_BUFFER_COUNT] = {
 		&output_buffer[0],
 		&output_buffer[OUTPUT_BUFFER_SIZE] 
 	};
 
+	ui.Init();
+
 	DACInterface dac0;
 	dac0.Init(output_buffer);
 
 	Oscillator osc;
-	osc.Init(output_buffer_list, 400.0);
+	osc.Init(output_buffer_list, 261.6256);
 
 	MemberFunctionCallable<Oscillator> genTableCallback(&osc, &Oscillator::generateTable);
 	MemberFunctionCallable<Oscillator> updateStateCallback(&osc, &Oscillator::updateState);
@@ -54,11 +58,9 @@ extern "C" int main(void) {
 	eventManager.enableListener(EventManager::kEventUpdateDamp, &potReadCallback, true);
 	eventManager.enableListener(EventManager::kEventUpdateShape, &potReadCallback, true);
 
-	pinMode(13, OUTPUT);
 
 	ftm_setup(UPDATE_PS, UPDATE_TIMER);
 
-	
 	// Main task loop
 	while(1) {
 		eventManager.processEvent();

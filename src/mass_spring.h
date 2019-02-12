@@ -39,7 +39,7 @@ class MassSystem
 		const float minMass = 0.01;
 
 		float hammerTable[5][N_WEIGHTS] = {};
-
+		float hammerIndex;
 	public:
 
     MassSystem();
@@ -51,6 +51,7 @@ class MassSystem
 		void setMass(float);
 		void setSpring(float);
 		void setZ(float);
+		void setShape(float);
 };
 
 #endif

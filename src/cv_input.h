@@ -13,11 +13,12 @@
 // information for mapping from ADC input to channel specific value 
 enum MapType {
 	LIN = 0,
-	EXP
+	EXP,
+	LOG
 };
 
 enum PinMapping {
-	COARSE_PITCH,
+	COARSE_PITCH = 0,
 	FINE_PITCH,
 	MASS_POT,
 	SPRING_POT,
@@ -46,14 +47,14 @@ class CVInput {
 			{14,	LIN,	-4.0f,	4.0f,		1.0f},	// coarse pitch
 			{15,	LIN,	-0.4f,	0.4f,		0.1f},	// fine pitch
 			{4,		LIN,	0.01f,		50.0f,	10.0f},	// mass
-			{5,		EXP,	0.0f,		100.0f,	750.0f},	// spring k
-			{6,		EXP,	0.0f,		100.0f,	750.0f},	// damping
-			{7,		LIN,	0.0f,		5.0f,		5.0f}		// hammer shape
+			{5,		LOG,	0.0125f,		81.0f,	10.0f},	// spring k
+			{6,		LOG,	0.0125f,		81.0f,	1.0f},	// damping
+			{7,		LIN,	0.0f,		3.0f,		3.0f}		// hammer shape
 		};
 
 		volatile uint16_t pinValueBuffer[adcPinCount] = {0};
 		const float baseFrequency = 261.6256; // according to vcv-rack docs
-
+		const float adcMax = (float)((1 << 16) - 1);
 	public:
 
 		CVInput() {};
@@ -61,7 +62,7 @@ class CVInput {
 
 		void Init();
 		void convert();
-		float mapCV(uint16_t, uint8_t);
+		float mapCV(uint16_t, int32_t);
 		float mapValueToVolt(uint16_t);
 		float mapPitch(float);
 
