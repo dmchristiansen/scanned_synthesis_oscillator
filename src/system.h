@@ -15,7 +15,7 @@
 
 	const uint32_t F_SAMPLE = 48000;
 	const uint16_t SAMPLE_TIMER = F_BUS / F_SAMPLE;
-	const uint16_t OUTPUT_BUFFER_SIZE = 64;
+	const uint16_t OUTPUT_BUFFER_SIZE = 128;
 	const uint16_t OUTPUT_BUFFER_COUNT = 2;
 
 	const uint16_t ADC_MAX = (1 << 16) - 1;

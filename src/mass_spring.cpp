@@ -12,27 +12,6 @@
 
 MassSystem::MassSystem()
 {
-	// Initialize simulation state
-	for (int i=0; i < N_WEIGHTS; i++) {
-		weights[i].mass = 0.5;
-		weights[i].pos = 0;
-		weights[i].velocity = 0;
-		weights[i].accel = 0;
-		weights[i].z = 0.25;
-		weights[i].center = 1.0;
-	}
-	for (int i=0; i < n_weights; i++) {
-		weights[i].pos = sinf((float)i * (6.238 / (float)n_weights));
-		//weights[i].pos = (1/(float)n_weights)*i*2 - 1;
-	}
-
-	for (int i=0; i < n_weights; i++) {
-		spring_k[i] = 5.0;
-	}
-
-	// Set interval to defaults
-	update_interval = 10;
-	interval_counter = 0;
 
 	// initialize values in hammer table
 	for (int i = 0; i < n_weights; i++) {
@@ -71,12 +50,12 @@ void MassSystem::pluck() {
 		*/
 
 		// interpolate between hammer shapes
-		weights[weightIndex].pos = 
+		impulse[weightIndex] = 
 			(hammerTable[tableIndex][weightIndex] * (1.0f - fractional)) + 
 			(hammerTable[(tableIndex + 1) % 4][weightIndex] * fractional);
 
-		weights[weightIndex].accel = 0;
-		weights[weightIndex].velocity = 0;
+		//weights[weightIndex].accel = 0;
+		//weights[weightIndex].velocity = 0;
 	}
 
 }
@@ -101,7 +80,10 @@ void MassSystem::updateState(float h) {
 
 	// Update velocities from accelerations
 	for (int i=0; i < N_WEIGHTS; i++) {
-		weights[i].velocity += (h * weights[i].accel);
+		float impulseDelta = impulse[i] * h * 10.0f;
+		weights[i].velocity += (h * weights[i].accel)
+			+ (impulseDelta / weights[i].mass);
+		impulse[i] -= impulseDelta;
 	}
 
 	// Update positions from velocities
@@ -138,13 +120,6 @@ void MassSystem::updateState(float h) {
 	for (int i=0; i < N_WEIGHTS; i++) {
 		int prev_i = (i - 1 + N_WEIGHTS) % N_WEIGHTS;
 		int next_i = (i + 1) % N_WEIGHTS;
-		// This uses a simplified version of the calculation...
-		/*
-		weights[i].accel = 
-			((((weights[prev_i].pos - weights[i].pos) +
-			(weights[next_i].pos - weights[i].pos)) * spring_k[i]) -
-			(weights[i].z * weights[i].velocity)) / weights[i].mass; 
-		*/
 		
 		// force from centering springs
 		fc = (weights[i].pos * weights[i].center * -1.0f);
@@ -181,8 +156,11 @@ void MassSystem::setMass(float newMass) {
 
 void MassSystem::setSpring(float newSpring) {
 	
+	// a = 0.0667, b = 16
+
 	for (int i = 0; i < n_weights; i++) {
 		spring_k[i] = newSpring;
+		//spring_k[i] = 0.0667f * powf(16.0f, (newSpring * ((float)i / (float)n_weights))) - 0.0667f;
 	}
 }
 

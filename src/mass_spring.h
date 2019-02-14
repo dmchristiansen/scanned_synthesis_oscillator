@@ -31,16 +31,18 @@ class MassSystem
 	private:
 
 		uint8_t n_weights = N_WEIGHTS;
-		Weight_t weights[N_WEIGHTS];
-		float spring_k[N_WEIGHTS]; 
+		Weight_t weights[N_WEIGHTS] = {{0}};
+		float spring_k[N_WEIGHTS] = {0}; 
 
-		uint32_t update_interval;
-		uint32_t interval_counter;
+		float updateFreq = 1;
 
 		const float minMass = 0.01;
 
-		float hammerTable[5][N_WEIGHTS] = {};
-		float hammerIndex;
+		float hammerTable[5][N_WEIGHTS] = {{0}};
+		float hammerIndex = 0;
+
+		float impulse[N_WEIGHTS] = {0};
+
 	public:
 
     MassSystem();

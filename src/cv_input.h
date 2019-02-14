@@ -51,7 +51,7 @@ class CVInput {
 			{4,		LIN,	0.01f,		50.0f,	10.0f},	// mass
 			{5,		LOG,	0.0125f,		81.0f,	10.0f},	// spring k
 			{6,		LOG,	0.0125f,		81.0f,	1.0f},	// damping
-			{7,		LOG,	0.0125f,		81.0f,	1.0f},	// centering spring k
+			{7,		LOG,	0.0125f,		81.0f,	10.0f},	// centering spring k
 			{17,	LIN,	0.0f,		3.0f,		3.0f}		// hammer shape
 		};
 
