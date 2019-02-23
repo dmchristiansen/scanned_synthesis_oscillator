@@ -8,66 +8,63 @@
 
 void CVInput::Init() {
 
-	adcState = 0;
+	adc_state = 0;
 	adc.Init();
+	note = baseFrequency;
 }
 
 void CVInput::convert() {
 
-	int32_t pinValue;
+	int32_t pin_value;
 	// read completed conversion	
-	pinValue = (int32_t)adc.readValue();
-	if (pinValue != -1) {
-		pinValueBuffer[adcState] = (uint16_t)(pinValue & 0xFFFF);
+	pin_value = (int32_t)adc.readValue();
+	if (pin_value != -1) {
+		pots_raw[adc_state] = (uint16_t)(pin_value & 0xFFFF);
+		pots_mapped[adc_state] = mapCV(pots_raw[adc_state], adc_state);
+	}
+
+	for (int32_t i = 0; i < adcPinCount; i++) {
+		pots_lp[i] += 0.5f * (pots_mapped[i] - pots_lp[i]);
 	}
 
 	// Event queue should be able to pass floats...
-	float newFreq = mapPitch(
-		mapCV(pinValueBuffer[COARSE_PITCH], COARSE_PITCH)
-		+ mapCV(pinValueBuffer[FINE_PITCH], FINE_PITCH)
-		//+ mapValueToVolt(1));
-		+ 0.0f);
-	float newMass = mapCV(pinValueBuffer[MASS_POT], MASS_POT); 
-	float newSpring = mapCV(pinValueBuffer[SPRING_POT], SPRING_POT);
-	float newDamp = mapCV(pinValueBuffer[DAMP_POT], DAMP_POT);
-	float newCenter = mapCV(pinValueBuffer[CENTER_POT], CENTER_POT);
-	float newShape = mapCV(pinValueBuffer[SHAPE_POT], SHAPE_POT);
+	note += 0.9f * (mapPitch(pots_lp[COARSE_PITCH] + pots_lp[FINE_PITCH]) - note);
 
 	// queue update events
 	eventManager.queueEvent(
 		EventManager::kEventUpdateFreq,
-		*reinterpret_cast<int32_t*>(&newFreq),
+		*reinterpret_cast<int32_t*>(&note),
 		EventManager::kLowPriority);
 
 	eventManager.queueEvent(
 		EventManager::kEventUpdateMass,
-		*reinterpret_cast<int32_t*>(&newMass),
+		*reinterpret_cast<int32_t*>(&pots_lp[MASS_POT]),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateSpring,
-		*reinterpret_cast<int32_t*>(&newSpring),
+		*reinterpret_cast<int32_t*>(&pots_lp[SPRING_POT]),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateDamp,
-		*reinterpret_cast<int32_t*>(&newDamp),
+		*reinterpret_cast<int32_t*>(&pots_lp[DAMP_POT]),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateCenter,
-		*reinterpret_cast<int32_t*>(&newCenter),
+		*reinterpret_cast<int32_t*>(&pots_lp[CENTER_POT]),
 		EventManager::kLowPriority);
 	
 	eventManager.queueEvent(
 		EventManager::kEventUpdateShape,
-		*reinterpret_cast<int32_t*>(&newShape),
+		*reinterpret_cast<int32_t*>(&pots_lp[SHAPE_POT]),
 		EventManager::kLowPriority);
 
 
 	// start conversion on next pin
-	adcState = (adcState + 1) % adcPinCount;
-	adc.startSingleRead(adcPins[adcState].pinNumber);
+	adc_state = (adc_state + 1) % adcPinCount;
+	adc.startSingleRead(adcPins[adc_state].pinNumber);
 }
 
 // map CV input from ADC to meaningful value

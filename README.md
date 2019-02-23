@@ -25,7 +25,7 @@ Functionality:
 	- The higher the update rate, the quicker the system loses energy to rounding errors
 
 - Add input to excite system
-  - Improve variety of pluck
+  x Improve variety of pluck
   - Add excite input (not sure how this should work)
 
 - Add add parameter control pots
@@ -34,7 +34,8 @@ Functionality:
   x mass
   x spring k
   x damp
-  - hammer quality
+	x center
+  x hammer quality
 	- update rate
 
 - Add CV inputs
@@ -50,10 +51,14 @@ Structure:
 - Abstract from hardware slightly (module interfaces)
 - Split DAC setup into DMAMUX/eDMA & DAC/PDB setups
 - Make ADC setup per-module / re-usable 
-- Make CV/pot value input / mapping a separate class from UI
+x Make CV/pot value input / mapping a separate class from UI
 - Improve event queue to accept functions with arbitrary signatures
 
 Optimization:
 - Improve state update algorithm
 - Use DMA to control ADC read interleaving
+
+Current Issues:
+- Frequency input is noisy
+- Hammer shape pot effects frequency ???
 

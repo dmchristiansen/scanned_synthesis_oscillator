@@ -12,12 +12,14 @@ class ADCInterface {
 
 	private:
 
-		uint8_t moduleNumber;
+		static uint32_t moduleUseMask; // available ADC modules
+		int32_t moduleNumber;
 
 
 	public:
 
-		ADCInterface() {};
+		ADCInterface();
+		ADCInterface(int32_t);
 		~ADCInterface() {};
 
 		void Init();
