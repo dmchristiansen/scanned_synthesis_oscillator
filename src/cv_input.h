@@ -41,6 +41,7 @@ class CVInput {
 	private:
 
 		ADCInterface adc;
+		SystemState* state;
 
 		static const uint8_t adcPinCount = 7;
 		uint32_t adc_state;
@@ -67,7 +68,7 @@ class CVInput {
 		CVInput() {};
 		~CVInput() {};
 
-		void Init();
+		void init(SystemState*);
 		void convert();
 		float mapCV(uint16_t, int32_t);
 		float mapValueToVolt(uint16_t);

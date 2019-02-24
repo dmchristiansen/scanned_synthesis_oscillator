@@ -14,7 +14,8 @@ class Oscillator {
 	private:
 
 		MassSystem model;
-		
+		SystemState* state;
+
 		volatile uint16_t** buffer_list;
 		volatile float phase_step;
 		volatile float phase_accumulator;
@@ -23,20 +24,19 @@ class Oscillator {
 
 		Oscillator() {}
 		~Oscillator() {};
-		void Init(volatile uint16_t** buf, float freq);
+		void init(SystemState*, volatile uint16_t** buf, float freq);
 
 		void generateTable(int, int);
 		void updateState(int, int);		
 		void pluck(int, int);
-		void setParam(int, int);
-
 		void setStep(float step) {phase_step = step;};	
 		
 
 };
 
 
-void Oscillator::Init(volatile uint16_t** buf, float freq) {
+void Oscillator::init(SystemState* state_, volatile uint16_t** buf, float freq) {
+	state = state_;
 	buffer_list = buf;
 	setStep(freq/(float)F_SAMPLE);
 	phase_accumulator = 0;
@@ -45,6 +45,8 @@ void Oscillator::Init(volatile uint16_t** buf, float freq) {
 }
 
 void Oscillator::generateTable(int code, int param) {
+
+	setStep((state->note)/(static_cast<float>(F_SAMPLE)));
 
 	// this should be rewritten to work with a larger number of buffers
 
@@ -58,37 +60,11 @@ void Oscillator::generateTable(int code, int param) {
 }
 
 void Oscillator::updateState(int code, int param) {
-	model.updateState(1/(float)param);
+	model.updateState(1/(float)param, &state->model_state);
 }
 
 void Oscillator::pluck(int code, int param) {
-	model.pluck();
-}
-
-void Oscillator::setParam(int code, int param) {
-	
-	switch (code) {
-		case (EventManager::kEventUpdateFreq):
-			setStep((*reinterpret_cast<float*>(&param))/(float)F_SAMPLE);
-			break;
-		case (EventManager::kEventUpdateMass):
-			model.setMass(*reinterpret_cast<float*>(&param));
-			break;
-		case (EventManager::kEventUpdateSpring):
-			model.setSpring(*reinterpret_cast<float*>(&param));
-			break;
-		case (EventManager::kEventUpdateDamp):
-			model.setZ(*reinterpret_cast<float*>(&param));
-			break;
-		case (EventManager::kEventUpdateCenter):
-			model.setCenter(*reinterpret_cast<float*>(&param));
-			break;
-		case (EventManager::kEventUpdateShape):
-			model.setShape(*reinterpret_cast<float*>(&param));
-			break;
-		default:
-			break;
-	}
+	model.pluck(state->model_state.shape);
 }
 
 #endif

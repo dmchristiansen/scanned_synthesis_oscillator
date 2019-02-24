@@ -7,6 +7,7 @@
 #include "system.h"
 #include "arm_math.h"
 #include "ui.h"
+#include "cv_input.h"
 
 //using namespace SSO;
 
@@ -27,38 +28,30 @@ extern "C" int main(void) {
 		&output_buffer[OUTPUT_BUFFER_SIZE] 
 	};
 
-	ui.Init();
+	CVInput cv;
+	SystemState system_state;
+
+	cv.init(&system_state);
+	
+	ui.init(&cv);
 
 	DACInterface dac0;
 	dac0.Init(output_buffer);
 
 	Oscillator osc;
-	osc.Init(output_buffer_list, 261.6256);
+	osc.init(&system_state, output_buffer_list, 261.6256);
 
 	MemberFunctionCallable<Oscillator> genTableCallback(&osc, &Oscillator::generateTable);
 	MemberFunctionCallable<Oscillator> updateStateCallback(&osc, &Oscillator::updateState);
 	MemberFunctionCallable<Oscillator> buttonPressCallback(&osc, &Oscillator::pluck);
-	MemberFunctionCallable<Oscillator> potReadCallback(&osc, &Oscillator::setParam);
 	
 	eventManager.addListener(EventManager::kEventOutBuffer, &genTableCallback);
 	eventManager.addListener(EventManager::kEventState, &updateStateCallback);
 	eventManager.addListener(EventManager::kEventButtonPress, &buttonPressCallback);
-	eventManager.addListener(EventManager::kEventUpdateFreq, &potReadCallback);
-	eventManager.addListener(EventManager::kEventUpdateMass, &potReadCallback);
-	eventManager.addListener(EventManager::kEventUpdateSpring, &potReadCallback);
-	eventManager.addListener(EventManager::kEventUpdateDamp, &potReadCallback);
-	eventManager.addListener(EventManager::kEventUpdateCenter, &potReadCallback);
-	eventManager.addListener(EventManager::kEventUpdateShape, &potReadCallback);
 
   eventManager.enableListener(EventManager::kEventOutBuffer, &genTableCallback, true);
 	eventManager.enableListener(EventManager::kEventState, &updateStateCallback, true);
 	eventManager.enableListener(EventManager::kEventButtonPress, &buttonPressCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateFreq, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateMass, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateSpring, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateDamp, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateCenter, &potReadCallback, true);
-	eventManager.enableListener(EventManager::kEventUpdateShape, &potReadCallback, true);
 
 
 	ftm_setup(UPDATE_PS, UPDATE_TIMER);

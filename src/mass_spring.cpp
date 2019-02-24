@@ -35,7 +35,10 @@ void MassSystem::excite(float excitation[]) {
 	}
 }
 
-void MassSystem::pluck() {
+void MassSystem::pluck(float shape_) {
+	
+	hammerIndex = shape_;
+	
 	float integral;
 	float fractional = std::modf(hammerIndex, &integral);
 	int32_t tableIndex = (int32_t)integral;	
@@ -75,8 +78,15 @@ float MassSystem::sample(float phase) {
 		fractional);
 }
 
-void MassSystem::updateState(float h) {
+void MassSystem::updateState(float h, ModelState* state) {
 	float fk, fc, fz;
+
+	for (int32_t i = 0; i < n_weights; i++) {
+		weights[i].mass = state->mass;
+		weights[i].z = state->z;
+		weights[i].center = state->center;
+		spring_k[i] = state->k;
+	}
 
 	// Update velocities from accelerations
 	for (int i=0; i < N_WEIGHTS; i++) {

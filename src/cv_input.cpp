@@ -6,7 +6,9 @@
 #include "cv_input.h"
 #include "Arduino.h"
 
-void CVInput::Init() {
+void CVInput::init(SystemState* state_) {
+	
+	state = state_;
 
 	adc_state = 0;
 	adc.Init();
@@ -23,6 +25,7 @@ void CVInput::convert() {
 		pots_mapped[adc_state] = mapCV(pots_raw[adc_state], adc_state);
 	}
 
+	// these should be a per-value lpf rate
 	for (int32_t i = 0; i < adcPinCount; i++) {
 		pots_lp[i] += 0.5f * (pots_mapped[i] - pots_lp[i]);
 	}
@@ -30,37 +33,12 @@ void CVInput::convert() {
 	// Event queue should be able to pass floats...
 	note += 0.9f * (mapPitch(pots_lp[COARSE_PITCH] + pots_lp[FINE_PITCH]) - note);
 
-	// queue update events
-	eventManager.queueEvent(
-		EventManager::kEventUpdateFreq,
-		*reinterpret_cast<int32_t*>(&note),
-		EventManager::kLowPriority);
-
-	eventManager.queueEvent(
-		EventManager::kEventUpdateMass,
-		*reinterpret_cast<int32_t*>(&pots_lp[MASS_POT]),
-		EventManager::kLowPriority);
-	
-	eventManager.queueEvent(
-		EventManager::kEventUpdateSpring,
-		*reinterpret_cast<int32_t*>(&pots_lp[SPRING_POT]),
-		EventManager::kLowPriority);
-	
-	eventManager.queueEvent(
-		EventManager::kEventUpdateDamp,
-		*reinterpret_cast<int32_t*>(&pots_lp[DAMP_POT]),
-		EventManager::kLowPriority);
-	
-	eventManager.queueEvent(
-		EventManager::kEventUpdateCenter,
-		*reinterpret_cast<int32_t*>(&pots_lp[CENTER_POT]),
-		EventManager::kLowPriority);
-	
-	eventManager.queueEvent(
-		EventManager::kEventUpdateShape,
-		*reinterpret_cast<int32_t*>(&pots_lp[SHAPE_POT]),
-		EventManager::kLowPriority);
-
+	state->note = note;
+	state->model_state.mass = pots_lp[MASS_POT];
+	state->model_state.k = pots_lp[SPRING_POT];
+	state->model_state.z = pots_lp[DAMP_POT];
+	state->model_state.center = pots_lp[CENTER_POT];
+	state->model_state.shape = pots_lp[SHAPE_POT];
 
 	// start conversion on next pin
 	adc_state = (adc_state + 1) % adcPinCount;

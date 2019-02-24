@@ -47,9 +47,9 @@ class MassSystem
 
     MassSystem();
 		void excite(float[]);
-		void pluck();
+		void pluck(float);
 		float sample(float);
-		void updateState(float);
+		void updateState(float, ModelState*);
 		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);
 		void setMass(float);
 		void setSpring(float);

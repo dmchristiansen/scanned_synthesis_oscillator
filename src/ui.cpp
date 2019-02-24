@@ -9,9 +9,9 @@
 
 #include "ui.h"
 
-void UserInterface::Init() {
+void UserInterface::init(CVInput* cv_) {
 
-	cv_input.Init();	
+	cv = cv_;	
 
 }
 
@@ -30,10 +30,12 @@ void UserInterface::poll() {
 		}
 	}
 
-	digitalWrite(13, buttons.immediateVal(0) ? LOW : HIGH);
 
 	// process cv/pot input buffer
-	cv_input.convert();
+	if(cv) 
+		cv->convert();
+	else
+		digitalWrite(13, HIGH);
 	
 
 }

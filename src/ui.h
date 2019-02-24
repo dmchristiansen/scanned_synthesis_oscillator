@@ -22,7 +22,7 @@ class UserInterface {
 	private:
 
 		ButtonInterface buttons;
-		CVInput cv_input;
+		CVInput* cv;
 
 		static const uint8_t buttonCount = 1;
 	
@@ -31,7 +31,7 @@ class UserInterface {
 		UserInterface() {};
 		~UserInterface() {};
 
-		void Init();
+		void init(CVInput*);
 		void poll();
 };
 
