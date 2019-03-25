@@ -101,6 +101,9 @@ void MassSystem::updateState(float h, ModelState* state) {
 		weights[i].pos += (h * weights[i].velocity);
 	}
 
+	weights[0].pos = 0;
+	weights[n_weights].pos = 0;
+
 	/*
 	 * The acceleration needs to be altered in the following ways:
 	 * The force should be proportional to the sine of the angle
@@ -149,7 +152,15 @@ void MassSystem::updateState(float h, ModelState* state) {
 // Fills table with a number of samples from system
 void MassSystem::generateTable(volatile uint16_t* table, uint16_t sample_count, float phase_step, volatile float* phase_offset) {
 	for (uint16_t i=0; i < sample_count; i++) {
-		table[i] = (int16_t)(this->sample(*phase_offset) * 512) + 2048;
+		int32_t sample_ = (int32_t)(sample(*phase_offset) * 512) + 2048;
+		if (sample_ > 4096)
+			table[i] = (uint16_t)4096;
+		else if (sample_ < 0)
+			table[i] = (uint16_t)0;
+		else
+			table[i] = (uint16_t)sample_;
+
+		//table[i] = (int16_t)(this->sample(*phase_offset) * 512) + 2048;
 		*phase_offset = fmodf((*phase_offset + phase_step), 1.0f);
 	}
 }

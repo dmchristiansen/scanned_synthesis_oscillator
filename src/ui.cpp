@@ -30,6 +30,8 @@ void UserInterface::poll() {
 		}
 	}
 
+	digitalWrite(13, (buttons.pressed(0)) ? HIGH : LOW);
+
 
 	// process cv/pot input buffer
 	if(cv) 
