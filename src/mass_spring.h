@@ -19,10 +19,10 @@
 struct Weight_t
 {
 	volatile float mass;
-	volatile float pos;
+	volatile float position;
 	volatile float velocity;
-	volatile float accel;
-	volatile float z;
+	volatile float acceleration;
+	volatile float damp;
 	volatile float center;
 };
 
@@ -30,9 +30,9 @@ class MassSystem
 {
 	private:
 
-		uint8_t n_weights = N_WEIGHTS;
+		uint8_t nWeights = N_WEIGHTS;
 		Weight_t weights[N_WEIGHTS] = {{0}};
-		float spring_k[N_WEIGHTS] = {0}; 
+		float spring[N_WEIGHTS] = {0}; 
 
 		float updateFreq = 1;
 
@@ -49,13 +49,8 @@ class MassSystem
 		void excite(float[]);
 		void pluck(float);
 		float sample(float);
-		void updateState(float, ModelState*);
+		void updateState(float, SystemState*);
 		void generateTable(volatile uint16_t*, uint16_t, float, volatile float*);
-		void setMass(float);
-		void setSpring(float);
-		void setZ(float);
-		void setShape(float);
-		void setCenter(float);
 };
 
 #endif

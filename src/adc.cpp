@@ -13,8 +13,7 @@ ADCInterface::ADCInterface() {
 		if (moduleUseMask & (0x1 << i)) {
 			moduleNumber = i;
 			moduleUseMask &= ~(0x1 << i);
-			moduleOffset = moduleNumber * ADC_OFFSET;
-			module = (ADC_t*)(ADC0_SC1A + moduleOffset);
+			module = (ADC_t*)(0x4003B000 + moduleNumber * 0x00080000);
 			return;
 		}
 	}
@@ -30,8 +29,7 @@ ADCInterface::ADCInterface(int32_t mod) {
 	if (moduleUseMask & (1 << mod)) {
 		moduleNumber = mod;
 		moduleUseMask &= ~(0x1 << mod);
-		moduleOffset = moduleNumber * ADC_OFFSET;
-		module = (ADC_t*)(ADC0_SC1A + moduleOffset);
+		module = (ADC_t*)(0x4003B000 + moduleNumber * 0x00080000);
 	} else {
 		moduleNumber = -1;
 		moduleOffset = 0;
@@ -42,14 +40,15 @@ ADCInterface::ADCInterface(int32_t mod) {
 void ADCInterface::Init() {
 
 	// check if an available module was found
-	if (moduleNumber == -1) return;
-
+	if (moduleNumber == -1) {
+		return;
+	}
 	// SIM_SOPT7 (ADC trigger selection)
 
 	SIM_SCGC6 |= SIM_SCGC6_ADC0; // ADC0 clock gate
 	SIM_SCGC3 |= SIM_SCGC3_ADC1; // ADC1 clock gate
 
-	module->SC1A = ADC_SC1_ADCH(14); // Select ADC input channel
+	//module->SC1A = ADC_SC1_ADCH(14); // Select ADC input channel
 	
 	module->CFG1 =
 		(ADC_CFG1_ADIV(0)		// Set clock division
@@ -66,12 +65,14 @@ void ADCInterface::Init() {
 	);
 
 	// calibration sequence
+	/*	
 	while (1) {
 		module->SC3 |= ADC_SC3_CAL;	// start calibration
 		while (module->SC3 & ADC_SC3_CAL) {}; // wait for completion
 		if (!(module->SC3 & ADC_SC3_CALF)) break; // if sucessful, end sequence
 	}
-
+	*/
+//	digitalWrite(13, HIGH);
 }
 
 // starts a read on specified pin

@@ -15,7 +15,7 @@
 
 #include "button.h"
 #include "cv_input.h"
-
+#include "system.h"
 
 class UserInterface {
 
@@ -23,15 +23,18 @@ class UserInterface {
 
 		ButtonInterface buttons;
 		CVInput* cv;
+		SystemState* state;
 
 		static const uint8_t buttonCount = 1;
-	
+
+		int32_t updateCounter = 0;
+
 	public:
 
 		UserInterface() {};
 		~UserInterface() {};
 
-		void init(CVInput*);
+		void init(CVInput*, SystemState*);
 		void poll();
 };
 

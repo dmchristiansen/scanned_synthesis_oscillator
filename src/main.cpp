@@ -30,15 +30,12 @@ extern "C" int main(void) {
 
 	CVInput cv;
 	SystemState system_state;
+	DACInterface dac0;
+	Oscillator osc;
 
 	cv.init(&system_state);
-	
-	ui.init(&cv);
-
-	DACInterface dac0;
+	ui.init(&cv, &system_state);	
 	dac0.Init(output_buffer);
-
-	Oscillator osc;
 	osc.init(&system_state, output_buffer_list, 261.6256);
 
 	MemberFunctionCallable<Oscillator> genTableCallback(&osc, &Oscillator::generateTable);

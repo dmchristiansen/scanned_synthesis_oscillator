@@ -9,10 +9,10 @@
 
 #include "ui.h"
 
-void UserInterface::init(CVInput* cv_) {
+void UserInterface::init(CVInput* cv_, SystemState* state_) {
 
 	cv = cv_;	
-
+	state = state_;
 }
 
 void UserInterface::poll() {
@@ -36,9 +36,18 @@ void UserInterface::poll() {
 	// process cv/pot input buffer
 	if(cv) 
 		cv->convert();
-	else
+	else {
 		digitalWrite(13, HIGH);
-	
+	}
+
+	updateCounter++;
+	if (updateCounter >= static_cast<int32_t>(1000.0f / state->rate)) {
+		updateCounter = 0;
+		eventManager.queueEvent(
+			EventManager::kEventState,
+			static_cast<int32_t>(state->rate),
+			EventManager::kLowPriority);
+	}
 
 }
 

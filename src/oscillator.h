@@ -60,11 +60,11 @@ void Oscillator::generateTable(int code, int param) {
 }
 
 void Oscillator::updateState(int code, int param) {
-	model.updateState(1/(float)param, &state->model_state);
+	model.updateState(1/(float)param, state);
 }
 
 void Oscillator::pluck(int code, int param) {
-	model.pluck(state->model_state.shape);
+	model.pluck(state->shape);
 }
 
 #endif

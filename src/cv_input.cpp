@@ -6,69 +6,87 @@
 #include "cv_input.h"
 #include "Arduino.h"
 
-void CVInput::init(SystemState* state_) {
-	
-	state = state_;
+MappingGuide CVInput::potMap[POT_LAST] = {
+	{LIN,	-4.0f,		4.0f,		1.0f},	// POT_COARSE 
+	{LIN,	-0.4f,		0.4f,		0.1f},	// POT_FINE
+	{LIN,	0.0f,			3.0f,		3.0f},	// POT_SHAPE
+	{LIN, 0.0f,			1.0f,		1.0f},	// POT_STRENGTH
+	{LOG, 0.01f,	50.0f, 1000.0f},	// POT_RATE
+	{LIN, -1.0f,		1.0f,		1.0f},	// POT_ATTEN
+	{LIN,	0.01f,		50.0f,	10.0f},	// POT_MASS
+	{LOG,	0.0125f,	81.0f,	1.0f},	// POT_DAMP
+	{LOG,	0.0125f,	81.0f,	10.0f},	// POT_SPRING
+	{LOG,	0.0125f,	81.0f,	10.0f}	// POT_CENTER
+};
 
-	adc_state = 0;
-	adc.Init();
+void CVInput::init(SystemState* state_) {
+
+	pots.Init();	
+	cv.Init();
+	state = state_;
 	note = baseFrequency;
 }
 
 void CVInput::convert() {
+	uint8_t index;
 
-	int32_t pin_value;
-	// read completed conversion	
-	pin_value = (int32_t)adc.readValue();
-	if (pin_value != -1) {
-		pots_raw[adc_state] = (uint16_t)(pin_value & 0xFFFF);
-		pots_mapped[adc_state] = mapCV(pots_raw[adc_state], adc_state);
-	}
-
+	// update pot readings
+	pots.scan();
+	index = pots.last_read();
+	pots_raw[index] = pots.value(index);
+	pots_mapped[index] = mapCV(pots_raw[index], index);
+	
+	// low-pass filter mapped values
 	// these should be a per-value lpf rate
-	for (int32_t i = 0; i < adcPinCount; i++) {
-		pots_lp[i] += 0.5f * (pots_mapped[i] - pots_lp[i]);
+	for (int32_t i = 0; i < POT_LAST; i++) {
+		pots_lp[i] += 0.01f * (pots_mapped[i] - pots_lp[i]);
 	}
+	
+	// update cv readings
+	cv.scan();
+	index = cv.last_read();
+	cv_raw[index] = cv.value(index);
+	cv_mapped[index] = mapValueToVolt(cv_raw[index]);
 
-	// Event queue should be able to pass floats...
-	note += 0.9f * (mapPitch(pots_lp[COARSE_PITCH] + pots_lp[FINE_PITCH]) - note);
-
+	// update state values
+	
+	note += 0.5f * (mapPitch(pots_lp[POT_COARSE] + pots_lp[POT_FINE] + cv_mapped[CV_PITCH]) - note);
 	state->note = note;
-	state->model_state.mass = pots_lp[MASS_POT];
-	state->model_state.k = pots_lp[SPRING_POT];
-	state->model_state.z = pots_lp[DAMP_POT];
-	state->model_state.center = pots_lp[CENTER_POT];
-	state->model_state.shape = pots_lp[SHAPE_POT];
-
-	// start conversion on next pin
-	adc_state = (adc_state + 1) % adcPinCount;
-	adc.startSingleRead(adcPins[adc_state].pinNumber);
+	state->shape = pots_lp[POT_SHAPE];
+	state->strength = pots_lp[POT_STRENGTH];
+	state->mass = pots_lp[POT_MASS];
+	state->damp = pots_lp[POT_DAMP];
+	state->spring = pots_lp[POT_SPRING];
+	state->center = pots_lp[POT_CENTER];
 }
 
 // map CV input from ADC to meaningful value
 float CVInput::mapCV(uint16_t input, int32_t pin) {
 	
 	float result;
+	float min = potMap[pin].min;
+	float max = potMap[pin].max;
+	float scale = potMap[pin].scale;
 
-	switch (adcPins[pin].mapping) {
+	switch (potMap[pin].mapping) {
 		case (LIN):
 			result = 
-				(float)input * ((adcPins[pin].max - adcPins[pin].min)/adcMax) 
-				+ adcPins[pin].min;
-			if (result < adcPins[pin].min) result = adcPins[pin].min;
-			else if (result > adcPins[pin].max) result = adcPins[pin].max;
+				(float)input * ((max - min)/ADC_MAX) 
+				+ min;
+			if (result < min) result = min;
+			else if (result > max) result = max;
 			break;
 		case (EXP):
-			result = powf(2.0f, ((float)input / adcPins[pin].scale));
-			if (result > adcPins[pin].max) result = adcPins[pin].max;
+			result = powf(2.0f, ((float)input / scale));
+			if (result > max) result = max;
 			break;
 		case (LOG):
-			result = adcPins[pin].scale * 
-				(adcPins[pin].min * powf(adcPins[pin].max, (float)input/adcMax) - adcPins[pin].min);
+			result = scale * 
+				(min * powf(max, (float)input/ADC_MAX) - min);
 			break;
 		case (INV):
-			result = ((float)input * ((adcPins[pin].min - adcPins[pin].max)/adcMax)) 
-				+ adcPins[pin].max + adcPins[pin].max;
+			result = ((float)input * ((min - max)/ADC_MAX)) 
+				+ max + max;
 			break;
 		default:
 			result = 0.0f;
@@ -83,7 +101,7 @@ float CVInput::mapCV(uint16_t input, int32_t pin) {
 // then reverse op-amp transform (two functions?)
 float CVInput::mapValueToVolt(uint16_t input) {
 	// map from ADC value back to 0V - 3.3V range
-	float result = (float)input * (3.3/adcMax);	
+	float result = (float)input * (3.3/ADC_MAX);	
 	
 	// CV input range: -5V to 5V
 	// op-amp maps to 0V to 3.3V, through inverting input

@@ -15,7 +15,7 @@
 
 const uint32_t F_SAMPLE = 48000;
 const uint16_t SAMPLE_TIMER = F_BUS / F_SAMPLE;
-const uint16_t OUTPUT_BUFFER_SIZE = 128;
+const uint16_t OUTPUT_BUFFER_SIZE = 64;
 const uint16_t OUTPUT_BUFFER_COUNT = 2;
 
 const uint16_t ADC_MAX = (1 << 16) - 1;
@@ -26,17 +26,15 @@ const uint16_t UPDATE_TIMER = F_BUS / (F_UPDATE * UPDATE_PS);
 
 extern EventManager eventManager;
 
-struct ModelState {
-	volatile float mass;
-	volatile float k;
-	volatile float z;
-	volatile float center;
-	volatile float shape;
-};
-
 struct SystemState {
 	volatile float note;
-	ModelState model_state;
+	volatile float shape;
+	volatile float strength;
+	volatile float rate;
+	volatile float mass;
+	volatile float damp;
+	volatile float spring;
+	volatile float center;
 };
 
 //}

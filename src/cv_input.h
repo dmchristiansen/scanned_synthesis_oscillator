@@ -9,6 +9,8 @@
 
 #include "system.h"
 #include "adc.h"
+#include "pots_adc.h"
+#include "cv_adc.h"
 
 // information for mapping from ADC input to channel specific value 
 enum MapType {
@@ -18,18 +20,7 @@ enum MapType {
 	INV
 };
 
-enum PinMapping {
-	COARSE_PITCH = 0,
-	FINE_PITCH,
-	MASS_POT,
-	SPRING_POT,
-	DAMP_POT,
-	SHAPE_POT,
-	CENTER_POT
-};
-
 struct MappingGuide {
-	uint8_t pinNumber;
 	MapType mapping;
 	float min;
 	float max;
@@ -40,29 +31,23 @@ class CVInput {
 
 	private:
 
-		ADCInterface adc;
+		PotsADC pots;		
+		CVADC cv;
 		SystemState* state;
 
-		static const uint8_t adcPinCount = 7;
 		uint32_t adc_state;
 		float note;
 
-		MappingGuide adcPins[adcPinCount] = {
-			{14,	LIN,	-4.0f,	4.0f,		1.0f},	// coarse pitch
-			{15,	LIN,	-0.4f,	0.4f,		0.1f},	// fine pitch
-			{4,		LIN,	0.01f,		50.0f,	10.0f},	// mass
-			{17,		LOG,	0.0125f,		81.0f,	10.0f},	// spring k
-			{6,		LOG,	0.0125f,		81.0f,	1.0f},	// damping
-			{5,	LIN,	0.0f,		3.0f,		3.0f},		// hammer shape
-			{7,		LOG,	0.0125f,		81.0f,	10.0f}	// centering spring k
-		};
+		static MappingGuide potMap[POT_LAST];
 
-		volatile uint16_t pots_raw[adcPinCount] = {0};
-		float pots_mapped[adcPinCount] = {0};
-		float pots_lp[adcPinCount] = {0};
+		volatile uint16_t pots_raw[POT_LAST] = {0};
+		float pots_mapped[POT_LAST] = {0};
+		float pots_lp[POT_LAST] = {0};
+		float cv_raw[CV_LAST] = {0};
+		float cv_mapped[CV_LAST] = {0};
 
 		const float baseFrequency = 261.6256; // according to vcv-rack docs
-		const float adcMax = (float)((1 << 16) - 1);
+		const float ADC_MAX = (float)((1 << 16) - 1);
 	public:
 
 		CVInput() {};
