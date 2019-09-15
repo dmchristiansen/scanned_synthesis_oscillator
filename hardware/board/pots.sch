@@ -1,0 +1,337 @@
+EESchema Schematic File Version 4
+LIBS:FDM-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 3 5
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Device:R_POT_US RV1
+U 1 1 5CBE647D
+P 1700 1550
+F 0 "RV1" H 1632 1596 50  0000 R CNN
+F 1 "100k" H 1632 1505 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 1700 1550 50  0001 C CNN
+F 3 "~" H 1700 1550 50  0001 C CNN
+	1    1700 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR02
+U 1 1 5CBE65C1
+P 1700 1750
+F 0 "#PWR02" H 1700 1500 50  0001 C CNN
+F 1 "GND" H 1705 1577 50  0000 C CNN
+F 2 "" H 1700 1750 50  0001 C CNN
+F 3 "" H 1700 1750 50  0001 C CNN
+	1    1700 1750
+	1    0    0    -1  
+$EndComp
+Text GLabel 1700 1350 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	1700 1400 1700 1350
+Wire Wire Line
+	1700 1750 1700 1700
+Wire Wire Line
+	1850 1550 1950 1550
+$Comp
+L Device:R_POT_US RV2
+U 1 1 5CBE6B9F
+P 1700 3200
+F 0 "RV2" H 1632 3246 50  0000 R CNN
+F 1 "100k" H 1632 3155 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 1700 3200 50  0001 C CNN
+F 3 "~" H 1700 3200 50  0001 C CNN
+	1    1700 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR03
+U 1 1 5CBE6BA6
+P 1700 3400
+F 0 "#PWR03" H 1700 3150 50  0001 C CNN
+F 1 "GND" H 1705 3227 50  0000 C CNN
+F 2 "" H 1700 3400 50  0001 C CNN
+F 3 "" H 1700 3400 50  0001 C CNN
+	1    1700 3400
+	1    0    0    -1  
+$EndComp
+Text GLabel 1700 3000 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	1700 3050 1700 3000
+Wire Wire Line
+	1700 3400 1700 3350
+Wire Wire Line
+	1850 3200 1950 3200
+$Comp
+L Device:R_POT_US RV3
+U 1 1 5CBE6C1D
+P 1700 4800
+F 0 "RV3" H 1632 4846 50  0000 R CNN
+F 1 "100k" H 1632 4755 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 1700 4800 50  0001 C CNN
+F 3 "~" H 1700 4800 50  0001 C CNN
+	1    1700 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR04
+U 1 1 5CBE6C24
+P 1700 5000
+F 0 "#PWR04" H 1700 4750 50  0001 C CNN
+F 1 "GND" H 1705 4827 50  0000 C CNN
+F 2 "" H 1700 5000 50  0001 C CNN
+F 3 "" H 1700 5000 50  0001 C CNN
+	1    1700 5000
+	1    0    0    -1  
+$EndComp
+Text GLabel 1700 4600 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	1700 4650 1700 4600
+Wire Wire Line
+	1700 5000 1700 4950
+Wire Wire Line
+	1850 4800 1950 4800
+$Comp
+L Device:R_POT_US RV9
+U 1 1 5CBE6CAC
+P 6200 1500
+F 0 "RV9" H 6132 1546 50  0000 R CNN
+F 1 "100k" H 6132 1455 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 6200 1500 50  0001 C CNN
+F 3 "~" H 6200 1500 50  0001 C CNN
+	1    6200 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR010
+U 1 1 5CBE6CB3
+P 6200 1700
+F 0 "#PWR010" H 6200 1450 50  0001 C CNN
+F 1 "GND" H 6205 1527 50  0000 C CNN
+F 2 "" H 6200 1700 50  0001 C CNN
+F 3 "" H 6200 1700 50  0001 C CNN
+	1    6200 1700
+	1    0    0    -1  
+$EndComp
+Text GLabel 6200 1300 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	6200 1350 6200 1300
+Wire Wire Line
+	6200 1700 6200 1650
+Wire Wire Line
+	6350 1500 6450 1500
+$Comp
+L Device:R_POT_US RV4
+U 1 1 5CBE6D7D
+P 3200 1500
+F 0 "RV4" H 3132 1546 50  0000 R CNN
+F 1 "100k" H 3132 1455 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 3200 1500 50  0001 C CNN
+F 3 "~" H 3200 1500 50  0001 C CNN
+	1    3200 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR05
+U 1 1 5CBE6D84
+P 3200 1700
+F 0 "#PWR05" H 3200 1450 50  0001 C CNN
+F 1 "GND" H 3205 1527 50  0000 C CNN
+F 2 "" H 3200 1700 50  0001 C CNN
+F 3 "" H 3200 1700 50  0001 C CNN
+	1    3200 1700
+	1    0    0    -1  
+$EndComp
+Text GLabel 3200 1300 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	3200 1350 3200 1300
+Wire Wire Line
+	3200 1700 3200 1650
+Wire Wire Line
+	3350 1500 3450 1500
+$Comp
+L Device:R_POT_US RV5
+U 1 1 5CBE6E7F
+P 3200 3200
+F 0 "RV5" H 3132 3246 50  0000 R CNN
+F 1 "100k" H 3132 3155 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 3200 3200 50  0001 C CNN
+F 3 "~" H 3200 3200 50  0001 C CNN
+	1    3200 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR06
+U 1 1 5CBE6E86
+P 3200 3400
+F 0 "#PWR06" H 3200 3150 50  0001 C CNN
+F 1 "GND" H 3205 3227 50  0000 C CNN
+F 2 "" H 3200 3400 50  0001 C CNN
+F 3 "" H 3200 3400 50  0001 C CNN
+	1    3200 3400
+	1    0    0    -1  
+$EndComp
+Text GLabel 3200 3000 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	3200 3050 3200 3000
+Wire Wire Line
+	3200 3400 3200 3350
+Wire Wire Line
+	3350 3200 3450 3200
+$Comp
+L Device:R_POT_US RV6
+U 1 1 5CBE6FD3
+P 3200 4800
+F 0 "RV6" H 3132 4846 50  0000 R CNN
+F 1 "100k" H 3132 4755 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 3200 4800 50  0001 C CNN
+F 3 "~" H 3200 4800 50  0001 C CNN
+	1    3200 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR07
+U 1 1 5CBE6FDA
+P 3200 5000
+F 0 "#PWR07" H 3200 4750 50  0001 C CNN
+F 1 "GND" H 3205 4827 50  0000 C CNN
+F 2 "" H 3200 5000 50  0001 C CNN
+F 3 "" H 3200 5000 50  0001 C CNN
+	1    3200 5000
+	1    0    0    -1  
+$EndComp
+Text GLabel 3200 4600 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	3200 4650 3200 4600
+Wire Wire Line
+	3200 5000 3200 4950
+Wire Wire Line
+	3350 4800 3450 4800
+$Comp
+L Device:R_POT_US RV10
+U 1 1 5CBE7170
+P 6200 3200
+F 0 "RV10" H 6132 3246 50  0000 R CNN
+F 1 "100k" H 6132 3155 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 6200 3200 50  0001 C CNN
+F 3 "~" H 6200 3200 50  0001 C CNN
+	1    6200 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR011
+U 1 1 5CBE7177
+P 6200 3400
+F 0 "#PWR011" H 6200 3150 50  0001 C CNN
+F 1 "GND" H 6205 3227 50  0000 C CNN
+F 2 "" H 6200 3400 50  0001 C CNN
+F 3 "" H 6200 3400 50  0001 C CNN
+	1    6200 3400
+	1    0    0    -1  
+$EndComp
+Text GLabel 6200 3000 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	6200 3050 6200 3000
+Wire Wire Line
+	6200 3400 6200 3350
+Wire Wire Line
+	6350 3200 6450 3200
+$Comp
+L Device:R_POT_US RV7
+U 1 1 5CBE7383
+P 4850 1500
+F 0 "RV7" H 4782 1546 50  0000 R CNN
+F 1 "100k" H 4782 1455 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 4850 1500 50  0001 C CNN
+F 3 "~" H 4850 1500 50  0001 C CNN
+	1    4850 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR08
+U 1 1 5CBE738A
+P 4850 1700
+F 0 "#PWR08" H 4850 1450 50  0001 C CNN
+F 1 "GND" H 4855 1527 50  0000 C CNN
+F 2 "" H 4850 1700 50  0001 C CNN
+F 3 "" H 4850 1700 50  0001 C CNN
+	1    4850 1700
+	1    0    0    -1  
+$EndComp
+Text GLabel 4850 1300 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	4850 1350 4850 1300
+Wire Wire Line
+	4850 1700 4850 1650
+Wire Wire Line
+	5000 1500 5100 1500
+$Comp
+L Device:R_POT_US RV8
+U 1 1 5CBE7619
+P 4850 3200
+F 0 "RV8" H 4782 3246 50  0000 R CNN
+F 1 "100k" H 4782 3155 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 4850 3200 50  0001 C CNN
+F 3 "~" H 4850 3200 50  0001 C CNN
+	1    4850 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR09
+U 1 1 5CBE7620
+P 4850 3400
+F 0 "#PWR09" H 4850 3150 50  0001 C CNN
+F 1 "GND" H 4855 3227 50  0000 C CNN
+F 2 "" H 4850 3400 50  0001 C CNN
+F 3 "" H 4850 3400 50  0001 C CNN
+	1    4850 3400
+	1    0    0    -1  
+$EndComp
+Text GLabel 4850 3000 1    50   Input ~ 0
++3V3_A
+Wire Wire Line
+	4850 3050 4850 3000
+Wire Wire Line
+	4850 3400 4850 3350
+Wire Wire Line
+	5000 3200 5100 3200
+Text GLabel 1950 1550 2    50   Input ~ 0
+POT_COARSE
+Text GLabel 3450 1500 2    50   Input ~ 0
+POT_STRENGTH
+Text GLabel 5100 1500 2    50   Input ~ 0
+POT_MASS
+Text GLabel 6450 1500 2    50   Input ~ 0
+POT_SPRING
+Text GLabel 6450 3200 2    50   Input ~ 0
+POT_CENTER
+Text GLabel 5100 3200 2    50   Input ~ 0
+POT_DAMP
+Text GLabel 3450 3200 2    50   Input ~ 0
+POT_RATE
+Text GLabel 1950 3200 2    50   Input ~ 0
+POT_FINE
+Text GLabel 1950 4800 2    50   Input ~ 0
+POT_SHAPE
+Text GLabel 3450 4800 2    50   Input ~ 0
+POT_ATTEN
+$EndSCHEMATC

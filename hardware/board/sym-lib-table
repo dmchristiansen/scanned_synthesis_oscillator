@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name eurorack)(type Legacy)(uri /home/daniel/Projects/synth/scanned_synthesis_oscillator/hardware/board/eurorack.lib)(options "")(descr ""))
+)
